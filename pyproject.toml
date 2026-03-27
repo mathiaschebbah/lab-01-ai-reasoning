@@ -1,0 +1,17 @@
+[project]
+name = "rubik-solver"
+version = "0.1.0"
+description = "Rubik's Cube solver using A* search"
+readme = "README.md"
+authors = [
+    { name = "mathiaschebbah", email = "mathias.chebbah@views.fr" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+rubik-solver = "rubik_solver.simulator:main"
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
