@@ -12,9 +12,10 @@ class Astar:
         c0 = Cube(cube)
         self.root = State(c0, 0, None, -1, h)
         self.explored = StateSet()
-        self.frontier = PriorityQfueueState()
+        self.frontier = PriorityQueueState()
 
-    def solve(self) -> list[str]:
+    def solve(self, maxNodes: int = 200_000) -> list[str]:
+        self.nodesExplored = 0
         self.frontier.push(self.root)
         while True:
             current = self.frontier.pop()
@@ -25,6 +26,9 @@ class Astar:
             if self.explored.contains(current):
                 continue
             self.explored.add(current)
+            self.nodesExplored += 1
+            if self.nodesExplored >= maxNodes:
+                return []
             for child in current.expand():
                 self.frontier.push(child)
 
