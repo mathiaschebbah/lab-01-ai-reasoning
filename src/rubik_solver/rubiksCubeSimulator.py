@@ -5,7 +5,6 @@ from typing import ClassVar
 
 from rubik_solver.astar import Astar
 from rubik_solver.cube import Cube
-from rubik_solver.heuristic import HeuristicLabel
 from rubik_solver.searchSupport import actionLabels, applyAction
 
 
@@ -134,27 +133,22 @@ class RubiksCubeSimulator:
 
     def solveInThread(self) -> None:
         cubeCopy = Cube(self.cube)
-        self.currentSolver = Astar(cubeCopy, HeuristicLabel())
+        self.currentSolver = Astar(cubeCopy)
         self.solveH0 = self.currentSolver.root.valH
         moves = self.currentSolver.solve()
-        self.root.after(0, self.onSolveDone, moves, self.currentSolver.nodesExplored)
+        self.root.after(0, self.onSolveDone, moves)
 
     def pollSolveProgress(self) -> None:
         if not self.solving:
             return
-        solver = getattr(self, "currentSolver", None)
-        if solver is not None:
-            n = solver.nodesExplored
-            h0 = getattr(self, "solveH0", "?")
-            self.statusLabel.config(text=f"Résolution... h₀={h0}  nœuds: {n:,}")
+        h0 = getattr(self, "solveH0", "?")
+        self.statusLabel.config(text=f"Résolution... h₀={h0}")
         self.root.after(200, self.pollSolveProgress)
 
-    def onSolveDone(self, moves: list[str], nodesExplored: int) -> None:
+    def onSolveDone(self, moves: list[str]) -> None:
         h0 = getattr(self, "solveH0", "?")
         if not moves and not self.cube.isSolved():
-            self.statusLabel.config(
-                text=f"Abandon — h₀={h0}, {nodesExplored:,} nœuds explorés (limite atteinte)"
-            )
+            self.statusLabel.config(text=f"Pas de solution trouvée (h₀={h0})")
             self.solving = False
             self.setButtons("normal")
             return
@@ -164,7 +158,7 @@ class RubiksCubeSimulator:
             self.setButtons("normal")
             return
         self.statusLabel.config(
-            text=f"Solution : {len(moves)} coups, {nodesExplored:,} nœuds (h₀={h0})"
+            text=f"Solution : {len(moves)} coups (h₀={h0})"
         )
         self.root.after(1000, self.animateSolve, moves, 0, len(moves))
 
@@ -221,6 +215,10 @@ class RubiksCubeSimulator:
     def run(self) -> None:
         self.root.mainloop()
 
+    @staticmethod
+    def main() -> None:
+        RubiksCubeSimulator().run()
 
-def main() -> None:
-    RubiksCubeSimulator().run()
+
+if __name__ == "__main__":
+    RubiksCubeSimulator.main()

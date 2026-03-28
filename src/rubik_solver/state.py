@@ -1,26 +1,26 @@
 from __future__ import annotations
 
 from rubik_solver.cube import Cube
-from rubik_solver.heuristic import Heuristic
+from rubik_solver.heuristic import HeuristicLabel
 from rubik_solver.linkedList import LinkedList
 from rubik_solver.searchSupport import applyAction
 
 
 class State:
+    heuristic = HeuristicLabel()
+
     def __init__(
         self,
         cube: Cube,
         nbrActions: int,
         pere: State | None,
         actionPere: int,
-        heuristic: Heuristic,
     ) -> None:
         self.cube = cube
         self.nbrActions = nbrActions
         self.pere = pere
         self.actionPere = actionPere
-        self.valH = heuristic.value(self)
-        self.heuristic = heuristic
+        self.valH = State.heuristic.value(self)
 
     def f(self) -> int:
         return self.nbrActions + self.valH
@@ -42,6 +42,6 @@ class State:
             c = Cube(self.cube)
             applyAction(c, actionId)
             children.append(
-                State(c, self.nbrActions + 1, self, actionId, self.heuristic)
+                State(c, self.nbrActions + 1, self, actionId)
             )
         return children

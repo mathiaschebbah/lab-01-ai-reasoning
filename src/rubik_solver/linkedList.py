@@ -5,23 +5,21 @@ from typing import Generic, Iterator, TypeVar
 T = TypeVar("T")
 
 
-class ListNode(Generic[T]):
-    __slots__ = ("value", "next")
-
-    def __init__(self, value: T) -> None:
-        self.value = value
-        self.next: ListNode[T] | None = None
-
-
 class LinkedList(Generic[T]):
-    """Liste chaînée simple pour les enfants retournés par State.expand."""
+
+    class ListNode:
+        __slots__ = ("value", "next")
+
+        def __init__(self, value: object) -> None:
+            self.value = value
+            self.next: LinkedList.ListNode | None = None
 
     def __init__(self) -> None:
-        self.head: ListNode[T] | None = None
-        self.tail: ListNode[T] | None = None
+        self.head: LinkedList.ListNode | None = None
+        self.tail: LinkedList.ListNode | None = None
 
     def append(self, item: T) -> None:
-        node: ListNode[T] = ListNode(item)
+        node = LinkedList.ListNode(item)
         if self.tail is None:
             self.head = self.tail = node
         else:
