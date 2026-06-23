@@ -1,0 +1,51 @@
+# --- Java / Maven build artifacts ---
+target/
+*.class
+*.jar
+!**/lib/*.jar
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+bin/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- LaTeX build artifacts ---
+# We keep the compiled report/presentation PDFs tracked (see note below),
+# but ignore the intermediate LaTeX build files.
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.lof
+*.lot
+*.idx
+*.ind
+*.ilg
+*.bcf
+*.run.xml
+
+# --- Logs / temp ---
+*.tmp
+*.swp
+*~
+
+# NOTE: PDF files are intentionally NOT ignored.
+# The project statement PDF and the final report/presentation PDFs
+# must remain tracked in the repository (required for submission).
