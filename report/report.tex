@@ -53,6 +53,12 @@
     rulecolor=\color{gray!40},
 }
 
+% Define an "Algorithm" float so algorithm blocks are labeled "Algorithm N"
+% rather than "Listing N". Uses the float package (no extra dependency).
+\floatstyle{plain}
+\newfloat{algorithm}{htbp}{loa}
+\floatname{algorithm}{Algorithm}
+
 % ----------------------------------------------------------------------
 % Header and footer
 % ----------------------------------------------------------------------
@@ -319,10 +325,13 @@ A \texttt{State} is a node of the search tree. It stores the cube, the number of
 actions from the root (the cost $g$), the parent state, the action used to reach
 it, and the heuristic value $h$. The constructor computes $h$ once. The
 \texttt{expand} method applies the twelve turns and returns the twelve children
-in a linked list, as the statement asks. Listing~\ref{lst:expand} shows the
+in a linked list, as the statement asks. Algorithm~\ref{alg:expand} shows the
 method.
 
-\begin{lstlisting}[caption={The expand method generates the twelve children.},label={lst:expand}]
+\begin{algorithm}[H]
+\caption{The expand method generates the twelve children.}
+\label{alg:expand}
+\begin{lstlisting}
 public LinkedList<State> expand() {
     LinkedList<State> children = new LinkedList<>();
     for (int action = 0; action < 12; action++) {
@@ -332,6 +341,7 @@ public LinkedList<State> expand() {
     return children;
 }
 \end{lstlisting}
+\end{algorithm}
 
 Each child keeps a reference to its parent and to the action that produced it.
 These two fields, called \texttt{pere} and \texttt{actionPere} in the statement,
@@ -445,9 +455,12 @@ shaded node has the smallest $f$, so it is expanded first and reaches the goal.}
 The \texttt{solve} method follows the A* pseudo code of Lecture 2. It uses the
 frontier and the explored set. It tests the goal when a node is popped, which
 keeps the search optimal. It rebuilds the plan by walking the parent chain and
-reading the action of each node. Listing~\ref{lst:astar} shows the algorithm.
+reading the action of each node. Algorithm~\ref{alg:astar} shows the method.
 
-\begin{lstlisting}[style=pseudo,caption={The A* search loop, as implemented in solve.},label={lst:astar}]
+\begin{algorithm}[H]
+\caption{The A* search loop, as implemented in solve.}
+\label{alg:astar}
+\begin{lstlisting}[style=pseudo]
 push the root state into the frontier
 while the frontier is not empty:
     node = frontier.pop()                 # smallest f = g + h
@@ -459,6 +472,7 @@ while the frontier is not empty:
         frontier.push(child)
 return failure
 \end{lstlisting}
+\end{algorithm}
 
 \subsection{Reconstructing the solution}
 
