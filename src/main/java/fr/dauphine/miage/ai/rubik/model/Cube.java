@@ -30,6 +30,11 @@ public final class Cube {
     /** Precomputed counter clockwise permutation tables, one per face. */
     private static final Map<Face, int[]> COUNTER_CLOCKWISE = new EnumMap<>(Face.class);
 
+    /** Face turned by action {@code i}, for {@code i = action % 6} (U, L, F, R, D, B). */
+    private static final Face[] FACE_OF_ACTION = {
+            Face.UP, Face.LEFT, Face.FRONT, Face.RIGHT, Face.DOWN, Face.BACK
+    };
+
     static {
         for (Face face : Face.values()) {
             int[] cw = CubeGeometry.clockwisePermutation(face);
@@ -39,7 +44,7 @@ public final class Cube {
     }
 
     /** Flat array of the 54 sticker color codes. */
-    private final char[] stickers;
+    private char[] stickers;
 
     /** Creates a solved cube. */
     public Cube() {
@@ -60,6 +65,17 @@ public final class Cube {
     /** @return a deep copy of this cube. */
     public Cube copy() {
         return new Cube(this.stickers);
+    }
+
+    /** Resets this cube in place to the solved configuration. */
+    public void reset() {
+        for (Face face : Face.values()) {
+            char code = face.solvedColor().code();
+            int base = face.ordinal() * 9;
+            for (int cell = 0; cell < 9; cell++) {
+                stickers[base + cell] = code;
+            }
+        }
     }
 
     /**
@@ -88,19 +104,22 @@ public final class Cube {
     }
 
     /**
-     * Returns whether the cube is solved, that is, every face is uniformly
-     * filled with a single color. We do not require a specific color per face,
-     * only uniformity, which is equivalent up to a whole cube rotation and makes
-     * the solver independent of the chosen orientation.
+     * Returns whether the cube is solved, that is, every face is uniformly filled
+     * with its solved color (white on top, etc.), exactly as the statement
+     * describes. Comparing against each face center (which never moves under the
+     * twelve face turns) would be equivalent for any legally reachable
+     * configuration, but anchoring to the fixed solved color keeps {@code
+     * isSolved()} perfectly consistent with the heuristics, which estimate the
+     * distance to those same fixed target faces.
      *
      * @return {@code true} if the configuration is solved
      */
     public boolean isSolved() {
         for (Face face : Face.values()) {
             int base = face.ordinal() * 9;
-            char center = stickers[base + 4];
+            char solved = face.solvedColor().code();
             for (int cell = 0; cell < 9; cell++) {
-                if (stickers[base + cell] != center) {
+                if (stickers[base + cell] != solved) {
                     return false;
                 }
             }
@@ -201,13 +220,41 @@ public final class Cube {
         }
     }
 
-    /** Applies a permutation to the sticker array: {@code new[i] = old[perm[i]]}. */
+    /**
+     * Applies a permutation to the sticker array ({@code new[i] = old[perm[i]]}).
+     * A single new array is allocated and swapped in, avoiding the extra copy
+     * back of a temporary buffer.
+     */
     private void apply(int[] perm) {
-        char[] updated = new char[stickers.length];
+        char[] updated = new char[perm.length];
         for (int i = 0; i < perm.length; i++) {
             updated[i] = stickers[perm[i]];
         }
-        System.arraycopy(updated, 0, stickers, 0, stickers.length);
+        this.stickers = updated;
+    }
+
+    /**
+     * Returns a new cube obtained by applying the given action to this cube,
+     * without modifying this cube. This fuses the copy and the move into a single
+     * array allocation, which matters on the hot path where the search generates
+     * twelve successors per expanded state.
+     *
+     * @param action the action identifier (0 to 11)
+     * @return a fresh cube with the action applied
+     */
+    public Cube withAction(int action) {
+        int[] perm = permutationFor(action);
+        char[] next = new char[perm.length];
+        for (int i = 0; i < perm.length; i++) {
+            next[i] = stickers[perm[i]];
+        }
+        return new Cube(next);
+    }
+
+    /** @return the permutation table of an action identifier (0 to 11). */
+    private static int[] permutationFor(int action) {
+        Face face = FACE_OF_ACTION[action % 6];
+        return action < 6 ? CLOCKWISE.get(face) : COUNTER_CLOCKWISE.get(face);
     }
 
     private static int[] invert(int[] perm) {

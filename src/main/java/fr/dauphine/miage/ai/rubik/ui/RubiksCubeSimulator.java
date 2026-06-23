@@ -4,6 +4,7 @@ import fr.dauphine.miage.ai.rubik.heuristic.HeuristicCube;
 import fr.dauphine.miage.ai.rubik.heuristic.HeuristicLabel;
 import fr.dauphine.miage.ai.rubik.heuristic.ZeroHeuristic;
 import fr.dauphine.miage.ai.rubik.model.Cube;
+import fr.dauphine.miage.ai.rubik.model.Move;
 import fr.dauphine.miage.ai.rubik.search.Astar;
 import fr.dauphine.miage.ai.rubik.search.State;
 import fr.dauphine.miage.ai.rubik.util.Scrambler;
@@ -47,8 +48,10 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
 
     /** Buttons that must be disabled while a search or animation runs. */
     private final JPanel controls = new JPanel();
+    private final java.util.List<JButton> moveButtons = new java.util.ArrayList<>();
     private JButton solveButton;
     private JButton scrambleButton;
+    private JButton resetButton;
 
     public RubiksCubeSimulator() {
         super("Rubik's Cube Solver - A* (M1 MIAGE, AI and Reasoning)");
@@ -70,10 +73,11 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
 
         // Row of the six clockwise and six counter clockwise moves.
         JPanel moves = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
-        for (int action = 0; action < 12; action++) {
-            JButton button = new JButton(Astar.notationOf(action));
+        for (int action = 0; action < Move.COUNT; action++) {
+            JButton button = new JButton(Move.notation(action));
             button.setActionCommand("move:" + action);
             button.addActionListener(this);
+            moveButtons.add(button);
             moves.add(button);
         }
 
@@ -81,7 +85,7 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         scrambleButton = makeButton("Scramble", "scramble", actions);
         solveButton = makeButton("Solve", "solve", actions);
-        makeButton("Reset", "reset", actions);
+        resetButton = makeButton("Reset", "reset", actions);
         actions.add(new JLabel("  Strategy:"));
         actions.add(heuristicChoice);
 
@@ -128,7 +132,7 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
             int action = Integer.parseInt(command.substring("move:".length()));
             cube.applyAction(action);
             cubePanel.setCube(cube);
-            status.setText("Applied " + Astar.notationOf(action)
+            status.setText("Applied " + Move.notation(action)
                     + (cube.isSolved() ? " - solved!" : ""));
         } else if ("scramble".equals(command)) {
             scramble();
@@ -145,15 +149,14 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         cubePanel.setCube(cube);
         StringBuilder sb = new StringBuilder();
         for (int action : applied) {
-            sb.append(Astar.notationOf(action)).append(' ');
+            sb.append(Move.notation(action)).append(' ');
         }
         log.setText("Scrambled with 12 moves:\n" + sb.toString().trim() + "\n");
         status.setText("Scrambled. Press Solve.");
     }
 
     private void reset() {
-        Cube solved = new Cube();
-        copyInto(solved);
+        cube.reset();
         cubePanel.setCube(cube);
         log.setText("");
         status.setText("Reset to solved cube.");
@@ -224,7 +227,7 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
                 status.setText(cube.isSolved() ? "Solved!" : "Animation done.");
                 return;
             }
-            cube.applyAction(actionOf(plan.get(step[0])));
+            cube.applyAction(Move.fromNotation(plan.get(step[0])));
             cubePanel.setCube(cube);
             step[0]++;
         });
@@ -243,30 +246,20 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         }
     }
 
+    /**
+     * Enables or disables every control that could change the cube while a search
+     * or an animation is running. The twelve move buttons are included, so the
+     * user cannot inject a move that would desynchronize the displayed cube from
+     * the configuration the solver planned for.
+     */
     private void setBusy(boolean busy) {
         solveButton.setEnabled(!busy);
         scrambleButton.setEnabled(!busy);
+        resetButton.setEnabled(!busy);
         heuristicChoice.setEnabled(!busy);
-    }
-
-    /** Copies the stickers of the given cube into the displayed cube. */
-    private void copyInto(Cube source) {
-        for (var face : fr.dauphine.miage.ai.rubik.model.Face.values()) {
-            for (int row = 0; row < 3; row++) {
-                for (int col = 0; col < 3; col++) {
-                    cube.set(face, row, col, source.get(face, row, col));
-                }
-            }
+        for (JButton button : moveButtons) {
+            button.setEnabled(!busy);
         }
-    }
-
-    private static int actionOf(String notation) {
-        for (int a = 0; a < 12; a++) {
-            if (Astar.notationOf(a).equals(notation)) {
-                return a;
-            }
-        }
-        throw new IllegalArgumentException("Unknown notation: " + notation);
     }
 
     /** Immutable result of one solve call, passed back from the worker. */

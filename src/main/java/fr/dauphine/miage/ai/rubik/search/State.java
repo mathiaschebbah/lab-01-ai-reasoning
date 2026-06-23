@@ -42,6 +42,7 @@ public final class State {
     private final State pere;
     private final int actionPere;
     private final int valH;
+    private final int evaluation;
 
     /**
      * Builds a state.
@@ -60,6 +61,8 @@ public final class State {
         // The heuristic is computed last, once the other fields are set, because
         // a heuristic reads the cube of this state.
         this.valH = heuristic.value(this);
+        // Cache f = g + h once; it is read many times during heap operations.
+        this.evaluation = nbrActions + valH;
     }
 
     /** @return the cube configuration of this node. */
@@ -94,7 +97,7 @@ public final class State {
      * @return the evaluation value used to order the frontier
      */
     public int getEvaluation() {
-        return nbrActions + valH;
+        return evaluation;
     }
 
     /** @return whether this state is a goal state (the cube is solved). */
@@ -113,8 +116,7 @@ public final class State {
     public LinkedList<State> expand() {
         LinkedList<State> children = new LinkedList<>();
         for (int action = 0; action < 12; action++) {
-            Cube next = cube.copy();
-            next.applyAction(action);
+            Cube next = cube.withAction(action);
             children.add(new State(next, nbrActions + 1, this, action));
         }
         return children;

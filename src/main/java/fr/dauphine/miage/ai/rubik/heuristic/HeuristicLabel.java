@@ -2,6 +2,7 @@ package fr.dauphine.miage.ai.rubik.heuristic;
 
 import fr.dauphine.miage.ai.rubik.model.Color;
 import fr.dauphine.miage.ai.rubik.model.Cube;
+import fr.dauphine.miage.ai.rubik.model.CubeGeometry;
 import fr.dauphine.miage.ai.rubik.model.Face;
 import fr.dauphine.miage.ai.rubik.search.State;
 
@@ -23,27 +24,50 @@ import fr.dauphine.miage.ai.rubik.search.State;
  * divided by the number of stickers that can change face in a single rotation,
  * which is twelve (the belt of three stickers on each of the four faces around
  * the turned face). Dividing by twelve makes the estimate admissible: one
- * rotation can move at most twelve stickers closer to their face, each by at
- * most one unit, so the number of remaining moves is at least the total distance
- * divided by twelve.</p>
+ * rotation moves twelve belt stickers, each to an adjacent face, so each can cut
+ * its face distance by at most one; the remaining move count is therefore at
+ * least the total distance divided by twelve.</p>
+ *
+ * <p>For speed, a small distance table indexed by (current face, sticker color)
+ * is precomputed once, together with the face of each of the 54 sticker
+ * positions, so {@code value} is a plain scan with no per call allocation.</p>
  */
 public final class HeuristicLabel implements Heuristic {
 
     /** The number of stickers that change face in a single rotation. */
     private static final int STICKERS_MOVED_PER_ROTATION = 12;
 
-    @Override
-    public int value(State state) {
-        Cube cube = state.getCube();
-        int totalDistance = 0;
+    /** Face that owns each sticker position 0..53. */
+    private static final Face[] STICKER_FACE = new Face[CubeGeometry.STICKER_COUNT];
+
+    /** DISTANCE[currentFace ordinal][color ordinal] in {0, 1, 2}. */
+    private static final int[][] DISTANCE = new int[6][6];
+
+    static {
         for (Face face : Face.values()) {
             for (int row = 0; row < 3; row++) {
                 for (int col = 0; col < 3; col++) {
-                    Color color = Color.fromCode(cube.get(face, row, col));
-                    Face target = targetFace(color);
-                    totalDistance += faceDistance(face, target);
+                    STICKER_FACE[CubeGeometry.index(face, row, col)] = face;
                 }
             }
+        }
+        for (Face from : Face.values()) {
+            for (Color color : Color.values()) {
+                Face target = targetFace(color);
+                DISTANCE[from.ordinal()][color.ordinal()] = faceDistance(from, target);
+            }
+        }
+    }
+
+    @Override
+    public int value(State state) {
+        Cube cube = state.getCube();
+        String stickers = cube.toCompactString();
+        int totalDistance = 0;
+        for (int sticker = 0; sticker < CubeGeometry.STICKER_COUNT; sticker++) {
+            Face from = STICKER_FACE[sticker];
+            int colorOrdinal = Color.fromCode(stickers.charAt(sticker)).ordinal();
+            totalDistance += DISTANCE[from.ordinal()][colorOrdinal];
         }
         return totalDistance / STICKERS_MOVED_PER_ROTATION;
     }

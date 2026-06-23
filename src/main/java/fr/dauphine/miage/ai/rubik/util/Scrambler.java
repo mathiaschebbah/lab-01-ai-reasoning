@@ -1,6 +1,7 @@
 package fr.dauphine.miage.ai.rubik.util;
 
 import fr.dauphine.miage.ai.rubik.model.Cube;
+import fr.dauphine.miage.ai.rubik.model.Move;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -42,8 +43,8 @@ public final class Scrambler {
         for (int i = 0; i < moves; i++) {
             int action;
             do {
-                action = random.nextInt(12);
-            } while (previous >= 0 && action == inverse(previous));
+                action = random.nextInt(Move.COUNT);
+            } while (previous >= 0 && action == Move.inverse(previous));
             cube.applyAction(action);
             applied.add(action);
             previous = action;
@@ -61,9 +62,5 @@ public final class Scrambler {
         Cube cube = new Cube();
         scramble(cube, moves);
         return cube;
-    }
-
-    private static int inverse(int action) {
-        return action < 6 ? action + 6 : action - 6;
     }
 }

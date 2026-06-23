@@ -133,6 +133,33 @@ class CubeTest {
     }
 
     @Test
+    @DisplayName("Each turn is clockwise as seen from outside its face")
+    void turnsAreClockwise() {
+        // U clockwise (seen from the top): the top belt cycles BACK -> RIGHT ->
+        // FRONT -> LEFT, so FRONT's top row receives RIGHT (green) and RIGHT's
+        // top row receives BACK (orange). This pins the rotation SENSE, which the
+        // order-4 and sexy-move tests cannot do on their own.
+        Cube up = new Cube();
+        up.turnUp();
+        assertEquals("GGG", topRow(up, Face.FRONT), "U should bring RIGHT (green) onto FRONT top");
+        assertEquals("OOO", topRow(up, Face.RIGHT), "U should bring BACK (orange) onto RIGHT top");
+
+        // F clockwise (seen from the front): UP's bottom row receives LEFT (blue)
+        // and RIGHT's left column receives UP (white).
+        Cube front = new Cube();
+        front.turnFront();
+        assertEquals("BBB", bottomRow(front, Face.UP), "F should bring LEFT (blue) onto UP bottom");
+        assertEquals("WWW", leftCol(front, Face.RIGHT), "F should bring UP (white) onto RIGHT left col");
+
+        // R clockwise (seen from the right): FRONT's right column receives DOWN
+        // (yellow) and UP's right column receives FRONT (red).
+        Cube right = new Cube();
+        right.turnRight();
+        assertEquals("YYY", rightCol(right, Face.FRONT), "R should bring DOWN (yellow) onto FRONT right col");
+        assertEquals("RRR", rightCol(right, Face.UP), "R should bring FRONT (red) onto UP right col");
+    }
+
+    @Test
     @DisplayName("The sexy move R U R' U' has order six")
     void sexyMoveOrderSix() {
         Cube cube = new Cube();
@@ -202,6 +229,22 @@ class CubeTest {
             cube.applyAction(random.nextInt(12));
         }
         return cube;
+    }
+
+    private static String topRow(Cube cube, Face face) {
+        return "" + cube.get(face, 0, 0) + cube.get(face, 0, 1) + cube.get(face, 0, 2);
+    }
+
+    private static String bottomRow(Cube cube, Face face) {
+        return "" + cube.get(face, 2, 0) + cube.get(face, 2, 1) + cube.get(face, 2, 2);
+    }
+
+    private static String leftCol(Cube cube, Face face) {
+        return "" + cube.get(face, 0, 0) + cube.get(face, 1, 0) + cube.get(face, 2, 0);
+    }
+
+    private static String rightCol(Cube cube, Face face) {
+        return "" + cube.get(face, 0, 2) + cube.get(face, 1, 2) + cube.get(face, 2, 2);
     }
 
     /** Maps an action to its inverse action code. */

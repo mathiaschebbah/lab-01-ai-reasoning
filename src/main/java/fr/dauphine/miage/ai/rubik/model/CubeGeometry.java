@@ -211,11 +211,12 @@ public final class CubeGeometry {
             // Outward normal -z. Viewer on -z side. Frame (u=+x, v=-y).
             // Clockwise: rotate by +90 about z in world terms.
             case BACK:  return rebuild(-y, x, z, -ny, nx, nz);
-            // Outward normal +y. Frame (u=+z, v=+x) right handed (z cross x = y).
-            // Clockwise seen from +y: (z, x) -> (x, -z) i.e. (x', z') with...
-            case UP:    return rebuild(z, y, -x, nz, ny, -nx);
-            // Outward normal -y. Viewer below. Opposite sense.
-            case DOWN:  return rebuild(-z, y, x, -nz, ny, nx);
+            // Outward normal +y. Looking down from +y, a clockwise turn maps the
+            // in-plane axes (x, z) by (x, z) -> (-z, x), so x' = -z and z' = x.
+            case UP:    return rebuild(-z, y, x, -nz, ny, nx);
+            // Outward normal -y. Looking up from -y, the clockwise sense is the
+            // mirror of UP: (x, z) -> (z, -x).
+            case DOWN:  return rebuild(z, y, -x, nz, ny, -nx);
             // Outward normal +x. Frame (u=+y, v=+z) right handed (y cross z = x).
             // Clockwise seen from +x: (y, z) -> (z, -y).
             case RIGHT: return rebuild(x, z, -y, nx, nz, -ny);

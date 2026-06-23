@@ -1,0 +1,145 @@
+\documentclass[11pt,a4paper]{article}
+
+% ----------------------------------------------------------------------
+% Packages
+% ----------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage[hidelinks]{hyperref}
+
+% ----------------------------------------------------------------------
+% Colors and code style
+% ----------------------------------------------------------------------
+\definecolor{dauphineblue}{RGB}{0,81,186}
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codekw}{RGB}{0,81,186}
+\definecolor{codecomment}{RGB}{90,110,90}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    keywordstyle=\color{codekw}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{red!60!black},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    breaklines=true,
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{gray!40},
+    framesep=4pt,
+    aboveskip=8pt,
+    belowskip=6pt,
+    language=Java,
+}
+
+% Pseudo-code environment, plain text, no language keywords.
+\lstdefinestyle{pseudo}{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    numbers=none,
+    keywordstyle=\color{codekw}\bfseries,
+    morekeywords={if,then,else,while,for,return,each,do,push,pop,add,not,and},
+    frame=single,
+    rulecolor=\color{gray!40},
+}
+
+% ----------------------------------------------------------------------
+% Header and footer
+% ----------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\lhead{\small Artificial Intelligence and Reasoning}
+\rhead{\small Lab 1: Rubik's Cube Solver}
+\cfoot{\small \thepage}
+
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+
+% ----------------------------------------------------------------------
+\begin{document}
+
+% ======================================================================
+% TITLE PAGE (not counted in the 12 pages)
+% ======================================================================
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\Large \textbf{Universite Paris Dauphine, PSL}}\\[0.3cm]
+{\large Master 1 MIAGE}\\[2.5cm]
+
+{\color{dauphineblue}\rule{\linewidth}{1.2pt}}\\[0.4cm]
+{\huge \textbf{Solving the Rubik's Cube}}\\[0.5cm]
+{\LARGE with the A* Search Algorithm}\\[0.4cm]
+{\color{dauphineblue}\rule{\linewidth}{1.2pt}}\\[1.5cm]
+
+{\large \textit{Course: Artificial Intelligence and Reasoning}}\\[0.3cm]
+{\large Lab 1 Project Report}\\[2.5cm]
+
+{\large \textbf{Authors}}\\[0.3cm]
+{\large Mathias CHEBBAH}\\[0.15cm]
+{\large Lamine BETRAOUI}\\[0.15cm]
+{\large Bouna SALL}\\[2cm]
+
+\vfill
+{\large June 2026}
+
+\end{titlepage}
+
+% ======================================================================
+% PAGE 1
+% ======================================================================
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+This report presents a program that solves the Rubik's Cube. We model the cube
+as a search problem and we solve it with the A* algorithm seen in Lecture 2.
+We first use a uniform cost search, then we add two admissible heuristics that
+guide the search. The first heuristic relaxes the problem so that each sticker
+moves on its own. The second heuristic relaxes it so that each piece moves on
+its own. We measure how scrambled a cube can be while still being solved in a
+reasonable time. The results confirm the course statement: a good heuristic
+gives large savings, and A* runs out of memory long before it runs out of time.
+
+\tableofcontents
+
+\vspace{1cm}
+
+% ----------------------------------------------------------------------
+\section{Introduction}
+
+A Rubik's Cube is a small cube made of nine stickers on each of its six faces.
+Each face can turn, which mixes the colors. The cube is solved when every face
+shows a single color. Our goal is to write the "solve" button of a cube
+simulator: given any mixed configuration, the program must return a sequence of
+moves that brings the cube back to the solved state.
+
+This problem fits the search framework of the course. A configuration is a
+state, a quarter turn is an action, and the solved cube is the goal. Because the
+moves all cost one, the shortest sequence of moves is the optimal solution. We
+therefore use the search methods of Lecture 2, and in particular the A*
+algorithm, which finds an optimal solution when its heuristic is admissible.
+
+The report is organized as follows. Section 2 states the problem with the five
+components of a search problem. Section 3 describes the classes of our program.
+Section 4 explains the A* algorithm and our implementation. Section 5 presents
+the two heuristics and shows that they are admissible. Section 6 reports our
+experiments. Section 7 concludes.
+
+\end{document}

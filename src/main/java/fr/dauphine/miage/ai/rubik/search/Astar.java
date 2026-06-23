@@ -1,6 +1,7 @@
 package fr.dauphine.miage.ai.rubik.search;
 
 import fr.dauphine.miage.ai.rubik.model.Cube;
+import fr.dauphine.miage.ai.rubik.model.Move;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,12 +21,6 @@ import java.util.List;
  * {@code null} when no solution is found within the configured limits.</p>
  */
 public final class Astar {
-
-    /** Human readable notation for each action identifier 0 to 11. */
-    private static final String[] NOTATION = {
-            "U", "L", "F", "R", "D", "B",       // 0..5  clockwise
-            "U'", "L'", "F'", "R'", "D'", "B'"  // 6..11 counter clockwise
-    };
 
     private final State root;
     private final StateSet explored;
@@ -152,7 +147,7 @@ public final class Astar {
         LinkedList<String> actions = new LinkedList<>();
         State current = goal;
         while (current.getPere() != null) {
-            actions.addFirst(NOTATION[current.getActionPere()]);
+            actions.addFirst(Move.notation(current.getActionPere()));
             current = current.getPere();
         }
         return actions;
@@ -171,8 +166,7 @@ public final class Astar {
         if (parentMove < 0) {
             return false; // The root has no move to undo.
         }
-        int inverse = parentMove < 6 ? parentMove + 6 : parentMove - 6;
-        return child.getActionPere() == inverse;
+        return child.getActionPere() == Move.inverse(parentMove);
     }
 
     /** @return the root state of the search tree. */
@@ -181,12 +175,13 @@ public final class Astar {
     }
 
     /**
-     * Returns the notation string of an action identifier.
+     * Returns the notation string of an action identifier. Kept as a convenience
+     * that delegates to {@link Move#notation(int)}.
      *
      * @param action the action identifier (0 to 11)
      * @return the matching notation (for example "R" or "U'")
      */
     public static String notationOf(int action) {
-        return NOTATION[action];
+        return Move.notation(action);
     }
 }
