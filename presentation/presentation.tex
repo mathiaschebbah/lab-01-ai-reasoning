@@ -1,0 +1,232 @@
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% ----------------------------------------------------------------------
+% Blue Beamer theme
+% ----------------------------------------------------------------------
+\usetheme{Madrid}
+\usecolortheme{default}
+\definecolor{dauphineblue}{RGB}{0,81,186}
+\setbeamercolor{structure}{fg=dauphineblue}
+\setbeamercolor{palette primary}{bg=dauphineblue,fg=white}
+\setbeamercolor{palette secondary}{bg=dauphineblue!80,fg=white}
+\setbeamercolor{palette tertiary}{bg=dauphineblue!60,fg=white}
+\setbeamercolor{frametitle}{bg=dauphineblue,fg=white}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+
+% Slightly smaller body text, following the "reduce by 20%" rule.
+\setbeamerfont{normal text}{size=\small}
+\AtBeginDocument{\small}
+
+% ----------------------------------------------------------------------
+\title[Rubik's Cube with A*]{Solving the Rubik's Cube with A*}
+\subtitle{Artificial Intelligence and Reasoning, Lab 1}
+\author[CHEBBAH, BETRAOUI, SALL]{Mathias CHEBBAH \and Lamine BETRAOUI \and Bouna SALL}
+\institute[Dauphine]{Universite Paris Dauphine, PSL \\ Master 1 MIAGE}
+\date{June 2026}
+
+\begin{document}
+
+% ======================================================================
+% COVER (not counted in the 9 slides)
+% ======================================================================
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% ======================================================================
+% SLIDE 1
+% ======================================================================
+\begin{frame}{The problem}
+  \begin{columns}
+    \begin{column}{0.58\textwidth}
+      \begin{itemize}
+        \item A Rubik's Cube has six faces of nine stickers.
+        \item Each face can turn, which mixes the colors.
+        \item The cube is solved when each face is one color.
+      \end{itemize}
+      \vspace{0.3cm}
+      \textbf{Our goal:} write the solve button. \\
+      Find a list of moves back to the solved cube.
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../report/figures/cube_scrambled.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ======================================================================
+% SLIDE 2
+% ======================================================================
+\begin{frame}{The cube as a search problem}
+  We use the five components of Lecture 2.
+  \vspace{0.2cm}
+  \begin{itemize}
+    \item \textbf{State:} a cube configuration.
+    \item \textbf{Actions:} the twelve quarter turns.
+    \item \textbf{Transition:} a turn permutes the stickers.
+    \item \textbf{Goal test:} every face is uniform.
+    \item \textbf{Cost:} each move costs one.
+  \end{itemize}
+  \vspace{0.2cm}
+  The shortest move list is the optimal solution.
+\end{frame}
+
+% ======================================================================
+% SLIDE 3
+% ======================================================================
+\begin{frame}{The classes}
+  We followed the statement closely, in Java.
+  \vspace{0.2cm}
+  \begin{itemize}
+    \item \textbf{Cube:} faces, the twelve turns, isSolved.
+    \item \textbf{State:} a node, with $g$, $h$ and expand.
+    \item \textbf{Astar:} the solve method.
+    \item \textbf{StateSet:} the explored set.
+    \item \textbf{PriorityQueueState:} the frontier.
+    \item \textbf{Heuristic:} the interface and its two versions.
+  \end{itemize}
+\end{frame}
+
+% ======================================================================
+% SLIDE 4
+% ======================================================================
+\begin{frame}{The A* algorithm}
+  A* expands the node with the smallest value
+  \[
+    f(n) = g(n) + h(n).
+  \]
+  \begin{itemize}
+    \item $g(n)$ is the cost from the start.
+    \item $h(n)$ estimates the cost to the goal.
+    \item With an admissible $h$, A* is optimal.
+    \item With $h = 0$, A* is a uniform cost search.
+  \end{itemize}
+\end{frame}
+
+% ======================================================================
+% SLIDE 5
+% ======================================================================
+\begin{frame}{Uniform cost search and A*}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+        \item UCS orders the frontier by $g$.
+        \item It is optimal but blind.
+        \item A* adds the heuristic $h$.
+        \item It looks toward the goal.
+        \item So A* expands far fewer states.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.62,
+        every node/.style={draw,thick,rounded corners,align=center,
+                           minimum size=7mm,font=\tiny}]
+        \node (r) at (0,2) {root\\$f{=}h$};
+        \node (a) at (-1.6,0.6) {$g{=}1$};
+        \node[fill=dauphineblue!20] (b) at (1.6,0.6) {$g{=}1$};
+        \node[fill=green!25] (g) at (1.6,-0.9) {goal};
+        \draw (r)--(a); \draw (r)--(b); \draw (b)--(g);
+      \end{tikzpicture} \\
+      {\tiny Smallest $f$ is expanded first.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ======================================================================
+% SLIDE 6
+% ======================================================================
+\begin{frame}{Heuristic 1: the sticker relaxation}
+  We assume each sticker moves on its own.
+  \vspace{0.2cm}
+  \begin{itemize}
+    \item Each sticker must reach its correct face.
+    \item Distance is 0, 1 or 2 quarter turns.
+    \item We sum over all 54 stickers.
+    \item We divide by 12 stickers moved per turn.
+  \end{itemize}
+  \[
+    h_{\text{label}} = \frac{1}{12}\sum_{s=1}^{54} d(s).
+  \]
+  This is admissible, so A* stays optimal.
+\end{frame}
+
+% ======================================================================
+% SLIDE 7
+% ======================================================================
+\begin{frame}{Heuristic 2: the piece relaxation}
+  We assume each piece moves on its own.
+  \vspace{0.2cm}
+  \begin{itemize}
+    \item A piece is a corner or an edge.
+    \item One turn moves four corners and four edges.
+    \item We count the misplaced pieces.
+  \end{itemize}
+  \[
+    h_{\text{cube}} = \max\left(
+    \left\lceil \tfrac{\text{misplaced corners}}{4} \right\rceil,
+    \left\lceil \tfrac{\text{misplaced edges}}{4} \right\rceil
+    \right).
+  \]
+  This is also admissible.
+\end{frame}
+
+% ======================================================================
+% SLIDE 8
+% ======================================================================
+\begin{frame}{Results}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+        \item UCS blows up around depth seven.
+        \item Both heuristics scale much further.
+        \item Plans stay optimal, same length.
+        \item Memory is the first limit, not time.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.52]
+        \draw[->] (4,0) -- (8.6,0) node[right]{\tiny depth};
+        \draw[->] (4,0) -- (4,6.4) node[above]{\tiny $\log_{10}$ exp.};
+        \foreach \x in {4,6,8} \draw (\x,0.05)--(\x,-0.05) node[below]{\tiny \x};
+        \foreach \y in {0,2,4,6} \draw (3.95,\y)--(4.05,\y) node[left]{\tiny \y};
+        \draw[thick,red!70!black] (4,3.83)--(5,4.31)--(6,5.70);
+        \node[red!70!black,font=\tiny] at (6,6.1) {UCS};
+        \draw[thick,dauphineblue] (4,0.9)--(5,1.8)--(6,2.65)--(7,3.84)--(8,4.42);
+        \node[dauphineblue,font=\tiny] at (8,4.8) {Cube};
+        \draw[thick,green!50!black] (4,1.15)--(5,1.6)--(6,2.6)--(7,3.2)--(8,3.76);
+        \node[green!50!black,font=\tiny] at (8.1,3.3) {Label};
+      \end{tikzpicture} \\
+      {\tiny Expanded states by depth, log scale.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ======================================================================
+% SLIDE 9
+% ======================================================================
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item We solved the cube with A*, as in the course.
+    \item A* returns an optimal solution.
+    \item A good heuristic gives huge savings.
+    \item UCS fails from about seven moves.
+    \item The main limit of A* is memory.
+  \end{itemize}
+  \vspace{0.4cm}
+  \centering
+  \textbf{Thank you for your attention.}
+\end{frame}
+
+\end{document}
