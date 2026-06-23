@@ -84,6 +84,42 @@ public final class CubeGeometry {
     }
 
     /**
+     * Returns an identifier of the cubie (small cube) carrying the sticker at the
+     * given face position. Stickers that belong to the same physical piece share
+     * the same identifier, which lets the piece based heuristic group the three
+     * stickers of a corner or the two stickers of an edge.
+     *
+     * @param face the face
+     * @param row  the row index (0 to 2)
+     * @param col  the column index (0 to 2)
+     * @return a stable cubie identifier in the range 0 to 26
+     */
+    public static int cubieId(Face face, int row, int col) {
+        Sticker s = stickerAt(face, row, col);
+        // Map each coordinate from {-1, 0, 1} to {0, 1, 2} and pack into base 3.
+        return (s.x + 1) * 9 + (s.y + 1) * 3 + (s.z + 1);
+    }
+
+    /**
+     * Returns how many stickers sit on the cubie of the given sticker: 3 for a
+     * corner, 2 for an edge, 1 for a center. Equivalent to the number of non zero
+     * coordinates of the cubie position.
+     *
+     * @param face the face
+     * @param row  the row index (0 to 2)
+     * @param col  the column index (0 to 2)
+     * @return 3 for a corner, 2 for an edge, 1 for a center
+     */
+    public static int cubieStickerCount(Face face, int row, int col) {
+        Sticker s = stickerAt(face, row, col);
+        int count = 0;
+        if (s.x != 0) count++;
+        if (s.y != 0) count++;
+        if (s.z != 0) count++;
+        return count;
+    }
+
+    /**
      * Computes the clockwise rotation permutation for the given face.
      *
      * @param turnedFace the face being turned clockwise

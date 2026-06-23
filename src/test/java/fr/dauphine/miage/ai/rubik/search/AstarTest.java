@@ -1,0 +1,156 @@
+package fr.dauphine.miage.ai.rubik.search;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import fr.dauphine.miage.ai.rubik.heuristic.HeuristicCube;
+import fr.dauphine.miage.ai.rubik.heuristic.HeuristicLabel;
+import fr.dauphine.miage.ai.rubik.heuristic.Heuristic;
+import fr.dauphine.miage.ai.rubik.heuristic.ZeroHeuristic;
+import fr.dauphine.miage.ai.rubik.model.Cube;
+import java.util.List;
+import java.util.Random;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+/**
+ * End to end tests of the A* solver under the three heuristics.
+ *
+ * <p>These tests check correctness (the returned action sequence really solves
+ * the cube) and optimality (uniform cost search and admissible A* return the
+ * same optimal length).</p>
+ */
+class AstarTest {
+
+    @AfterEach
+    void resetHeuristic() {
+        State.heuristic = new ZeroHeuristic();
+    }
+
+    @Test
+    @DisplayName("Solving an already solved cube returns an empty plan")
+    void alreadySolved() {
+        State.heuristic = new ZeroHeuristic();
+        Astar astar = new Astar(new Cube());
+        List<String> plan = astar.solve();
+        assertNotNull(plan);
+        assertTrue(plan.isEmpty(), "A solved cube needs no move");
+    }
+
+    @Test
+    @DisplayName("A single scramble move is undone with one optimal move")
+    void singleMove() {
+        State.heuristic = new HeuristicCube();
+        for (int action = 0; action < 12; action++) {
+            Cube cube = new Cube();
+            cube.applyAction(action);
+            Astar astar = new Astar(cube);
+            List<String> plan = astar.solve();
+            assertNotNull(plan, "A one move scramble must be solvable");
+            assertEquals(1, plan.size(), "Optimal plan length for a one move scramble is 1");
+            assertTrue(applyAndCheck(cube, plan), "Plan must solve the cube");
+        }
+    }
+
+    @Test
+    @DisplayName("Uniform cost search solves short scrambles correctly")
+    void uniformCostSolvesShortScrambles() {
+        State.heuristic = new ZeroHeuristic();
+        for (int seed = 0; seed < 10; seed++) {
+            Cube cube = scramble(4, seed);
+            Astar astar = new Astar(cube);
+            List<String> plan = astar.solve();
+            assertNotNull(plan, "Scramble of depth 4 must be solvable by UCS (seed " + seed + ")");
+            assertTrue(plan.size() <= 4, "Optimal plan cannot be longer than the scramble");
+            assertTrue(applyAndCheck(cube, plan));
+        }
+    }
+
+    @Test
+    @DisplayName("A* with HeuristicCube solves scrambles and matches the optimal length")
+    void heuristicCubeMatchesOptimal() {
+        for (int seed = 0; seed < 8; seed++) {
+            Cube cube = scramble(5, seed + 100);
+
+            State.heuristic = new ZeroHeuristic();
+            int optimal = new Astar(cube).solve().size();
+
+            State.heuristic = new HeuristicCube();
+            List<String> plan = new Astar(cube).solve();
+            assertNotNull(plan);
+            assertEquals(optimal, plan.size(),
+                    "A* with an admissible heuristic must return the optimal length (seed " + seed + ")");
+            assertTrue(applyAndCheck(cube, plan));
+        }
+    }
+
+    @Test
+    @DisplayName("A* with HeuristicLabel solves scrambles and matches the optimal length")
+    void heuristicLabelMatchesOptimal() {
+        for (int seed = 0; seed < 8; seed++) {
+            Cube cube = scramble(5, seed + 200);
+
+            State.heuristic = new ZeroHeuristic();
+            int optimal = new Astar(cube).solve().size();
+
+            State.heuristic = new HeuristicLabel();
+            List<String> plan = new Astar(cube).solve();
+            assertNotNull(plan);
+            assertEquals(optimal, plan.size(),
+                    "A* with HeuristicLabel must return the optimal length (seed " + seed + ")");
+            assertTrue(applyAndCheck(cube, plan));
+        }
+    }
+
+    @Test
+    @DisplayName("A heuristic search expands no more states than uniform cost")
+    void heuristicReducesExpansions() {
+        Cube cube = scramble(5, 4242);
+
+        State.heuristic = new ZeroHeuristic();
+        Astar ucs = new Astar(cube);
+        ucs.solve();
+        long ucsExpanded = ucs.getExpandedCount();
+
+        State.heuristic = new HeuristicCube();
+        Astar astar = new Astar(cube);
+        astar.solve();
+        long astarExpanded = astar.getExpandedCount();
+
+        assertTrue(astarExpanded <= ucsExpanded,
+                "A* (" + astarExpanded + ") should not expand more than UCS (" + ucsExpanded + ")");
+    }
+
+    // ------------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------------
+
+    /** Applies the action plan to a copy of the cube and checks it gets solved. */
+    private static boolean applyAndCheck(Cube original, List<String> plan) {
+        Cube cube = original.copy();
+        for (String notation : plan) {
+            cube.applyAction(actionOf(notation));
+        }
+        return cube.isSolved();
+    }
+
+    private static int actionOf(String notation) {
+        for (int a = 0; a < 12; a++) {
+            if (Astar.notationOf(a).equals(notation)) {
+                return a;
+            }
+        }
+        throw new IllegalArgumentException("Unknown notation " + notation);
+    }
+
+    private static Cube scramble(int moves, long seed) {
+        Random random = new Random(seed);
+        Cube cube = new Cube();
+        for (int i = 0; i < moves; i++) {
+            cube.applyAction(random.nextInt(12));
+        }
+        return cube;
+    }
+}

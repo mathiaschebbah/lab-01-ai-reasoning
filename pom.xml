@@ -45,6 +45,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <!-- A* on a Rubik's Cube is memory intensive; give the test
+                         JVM enough heap to run the search based tests. -->
+                    <argLine>-Xmx2g</argLine>
+                </configuration>
             </plugin>
 
             <!-- Builds an executable JAR with the GUI as entry point. -->
