@@ -52,14 +52,18 @@
         \item A Rubik's Cube has six faces of nine stickers.
         \item Each face can turn, which mixes the colors.
         \item The cube is solved when each face is one color.
+        \item It has about $4.3 \times 10^{19}$ configurations.
       \end{itemize}
-      \vspace{0.3cm}
+      \vspace{0.25cm}
       \textbf{Our goal:} write the solve button. \\
-      Find a list of moves back to the solved cube.
+      Find a list of moves back to the solved cube. \\
+      We use search, as seen in Lecture 2.
     \end{column}
     \begin{column}{0.42\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{../report/figures/cube_scrambled.png}
+      \includegraphics[width=\linewidth]{../report/figures/cube_scrambled.png} \\
+      \vspace{0.15cm}
+      {\tiny A scrambled cube, drawn as a net.}
     \end{column}
   \end{columns}
 \end{frame}
@@ -69,7 +73,7 @@
 % ======================================================================
 \begin{frame}{The cube as a search problem}
   We use the five components of Lecture 2.
-  \vspace{0.2cm}
+  \vspace{0.15cm}
   \begin{itemize}
     \item \textbf{State:} a cube configuration.
     \item \textbf{Actions:} the twelve quarter turns.
@@ -77,8 +81,10 @@
     \item \textbf{Goal test:} every face is uniform.
     \item \textbf{Cost:} each move costs one.
   \end{itemize}
-  \vspace{0.2cm}
-  The shortest move list is the optimal solution.
+  \vspace{0.15cm}
+  The shortest move list is the optimal solution. \\
+  The branching factor is twelve, so the tree is $O(12^d)$. \\
+  A blind search cannot go deep. We need a heuristic.
 \end{frame}
 
 % ======================================================================
@@ -86,7 +92,7 @@
 % ======================================================================
 \begin{frame}{The classes}
   We followed the statement closely, in Java.
-  \vspace{0.2cm}
+  \vspace{0.15cm}
   \begin{itemize}
     \item \textbf{Cube:} faces, the twelve turns, isSolved.
     \item \textbf{State:} a node, with $g$, $h$ and expand.
@@ -95,6 +101,9 @@
     \item \textbf{PriorityQueueState:} the frontier.
     \item \textbf{Heuristic:} the interface and its two versions.
   \end{itemize}
+  \vspace{0.15cm}
+  The turns come from a real 3D model of the cube. \\
+  We built each class test first, with twenty four tests.
 \end{frame}
 
 % ======================================================================
@@ -108,9 +117,12 @@
   \begin{itemize}
     \item $g(n)$ is the cost from the start.
     \item $h(n)$ estimates the cost to the goal.
+    \item An admissible $h$ never overestimates the cost.
     \item With an admissible $h$, A* is optimal.
     \item With $h = 0$, A* is a uniform cost search.
   \end{itemize}
+  \vspace{0.1cm}
+  We rebuild the plan by walking the parent chain.
 \end{frame}
 
 % ======================================================================
@@ -120,11 +132,12 @@
   \begin{columns}
     \begin{column}{0.55\textwidth}
       \begin{itemize}
-        \item UCS orders the frontier by $g$.
+        \item UCS orders the frontier by $g$ only.
         \item It is optimal but blind.
         \item A* adds the heuristic $h$.
         \item It looks toward the goal.
         \item So A* expands far fewer states.
+        \item Both find the same optimal plan.
       \end{itemize}
     \end{column}
     \begin{column}{0.45\textwidth}
@@ -147,8 +160,9 @@
 % SLIDE 6
 % ======================================================================
 \begin{frame}{Heuristic 1: the sticker relaxation}
-  We assume each sticker moves on its own.
-  \vspace{0.2cm}
+  A relaxation drops some rules of the problem. \\
+  Here each sticker may move on its own.
+  \vspace{0.15cm}
   \begin{itemize}
     \item Each sticker must reach its correct face.
     \item Distance is 0, 1 or 2 quarter turns.
@@ -158,6 +172,7 @@
   \[
     h_{\text{label}} = \frac{1}{12}\sum_{s=1}^{54} d(s).
   \]
+  After one turn, the sum is 12, so $h = 1$. \\
   This is admissible, so A* stays optimal.
 \end{frame}
 
@@ -165,12 +180,13 @@
 % SLIDE 7
 % ======================================================================
 \begin{frame}{Heuristic 2: the piece relaxation}
-  We assume each piece moves on its own.
-  \vspace{0.2cm}
+  Here each piece may move on its own.
+  \vspace{0.15cm}
   \begin{itemize}
     \item A piece is a corner or an edge.
     \item One turn moves four corners and four edges.
     \item We count the misplaced pieces.
+    \item The centers are fixed, so we ignore them.
   \end{itemize}
   \[
     h_{\text{cube}} = \max\left(
@@ -178,7 +194,7 @@
     \left\lceil \tfrac{\text{misplaced edges}}{4} \right\rceil
     \right).
   \]
-  This is also admissible.
+  This is also admissible. The sticker one is stronger here.
 \end{frame}
 
 % ======================================================================
@@ -189,8 +205,10 @@
     \begin{column}{0.5\textwidth}
       \begin{itemize}
         \item UCS blows up around depth seven.
+        \item At depth six it expands about 500k states.
         \item Both heuristics scale much further.
         \item Plans stay optimal, same length.
+        \item A* solves depth ten in about twelve seconds.
         \item Memory is the first limit, not time.
       \end{itemize}
     \end{column}
@@ -221,10 +239,11 @@
     \item We solved the cube with A*, as in the course.
     \item A* returns an optimal solution.
     \item A good heuristic gives huge savings.
+    \item The heuristic changes the effort, not the answer.
     \item UCS fails from about seven moves.
     \item The main limit of A* is memory.
   \end{itemize}
-  \vspace{0.4cm}
+  \vspace{0.35cm}
   \centering
   \textbf{Thank you for your attention.}
 \end{frame}
