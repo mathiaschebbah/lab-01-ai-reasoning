@@ -18,7 +18,7 @@ zip -r "$OUT" \
     pom.xml \
     README.md \
     src \
-    report/report.tex report/report.pdf report/figures \
+    report/report.tex report/report.pdf report/figures report/*.sty \
     presentation/presentation.tex presentation/presentation.pdf \
     "Lab 1 - Solveur Rubik's Cube (Astar).pdf" \
     -x '*.DS_Store' \

@@ -53,11 +53,9 @@
     rulecolor=\color{gray!40},
 }
 
-% Define an "Algorithm" float so algorithm blocks are labeled "Algorithm N"
-% rather than "Listing N". Uses the float package (no extra dependency).
-\floatstyle{plain}
-\newfloat{algorithm}{htbp}{loa}
-\floatname{algorithm}{Algorithm}
+% Algorithm typesetting with the standard algorithm + algpseudocode packages.
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 % ----------------------------------------------------------------------
 % Header and footer
@@ -106,14 +104,13 @@
 % ======================================================================
 \section*{Abstract}
 
-This report presents a program that solves the Rubik's Cube. We model the cube
-as a search problem and we solve it with the A* algorithm seen in Lecture 2. We
-first run a uniform cost search. We then add two admissible heuristics that guide
-the search. The first heuristic relaxes the problem so that each sticker moves on
-its own. The second heuristic relaxes it so that each piece moves on its own. We
-measure how scrambled a cube can be while still being solved fast. The results
-confirm the course: a good heuristic gives large savings, and A* runs out of
-memory long before it runs out of time.
+This report presents a program that solves the Rubik's Cube. We model the cube as
+a search problem. We solve it with the A* algorithm of Lecture 2. We first run a
+uniform cost search. We then add two admissible heuristics. They guide the search.
+The first heuristic lets each sticker move on its own. The second one lets each
+piece move on its own. We measure how scrambled a cube can be. The results confirm
+the course. A good heuristic gives large savings. A* also runs out of memory
+before it runs out of time.
 
 \tableofcontents
 \vspace{0.6cm}
@@ -123,15 +120,14 @@ memory long before it runs out of time.
 
 A Rubik's Cube is a small cube. Each of its six faces holds nine colored
 stickers. Every face can turn, which mixes the colors. The cube is solved when
-each face shows a single color. Our goal is to write the "solve" button of a
-cube simulator. Given any mixed cube, the program must return a list of moves
-that brings it back to the solved state.
+each face shows a single color. Our goal is to write the "solve" button. The
+program takes any mixed cube. It must return a list of moves to the solved state.
 
 This problem fits the search framework of the course. A cube configuration is a
 state. A quarter turn of a face is an action. The solved cube is the goal. Every
-move costs one, so the shortest sequence of moves is the optimal solution. We
-therefore use the search methods of Lecture 2. In particular we use A*, which
-returns an optimal solution when its heuristic is admissible.
+move costs one. So the shortest sequence of moves is the optimal solution. We
+therefore use the search methods of Lecture 2. We use A* in particular. It returns
+an optimal solution when its heuristic is admissible.
 
 The report is organized as follows. Section 2 states the problem with the five
 components of a search problem. Section 3 describes the classes of the program.
@@ -144,12 +140,12 @@ Section 7 concludes.
 
 \subsection{The cube and its representation}
 
-We follow the Western color scheme. The solved cube shows white on the UP face,
-yellow on DOWN, red on FRONT, orange on BACK, blue on LEFT and green on RIGHT.
-Opposite faces are UP and DOWN, FRONT and BACK, LEFT and RIGHT. Each face is a
-three by three matrix of characters. The characters are 'W', 'R', 'G', 'B', 'Y'
-and 'O', as the statement requires. Figure~\ref{fig:net} shows the solved cube
-and a scrambled cube drawn by our interface as an unfolded net.
+We follow the Western color scheme. In the solved cube, UP is white and DOWN is
+yellow. FRONT is red and BACK is orange. LEFT is blue and RIGHT is green. Opposite
+faces are UP and DOWN, FRONT and BACK, LEFT and RIGHT. Each face is a three by
+three matrix of characters. The characters are 'W', 'R', 'G', 'B', 'Y' and 'O'.
+Figure~\ref{fig:net} shows a solved cube and a scrambled cube. Our interface draws
+them as an unfolded net.
 
 \begin{figure}[H]
 \centering
@@ -170,12 +166,12 @@ face never moves, so it keeps its solved color.}
 \end{figure}
 
 Inside the program the 54 stickers are stored in one flat array. The matrix of a
-face is a view over this array. Each face uses row and column indices from 0 to
-2, as in the figure of the statement. To turn a face we must know where every
-sticker goes. We place each sticker in a 3D frame, shown in
-Figure~\ref{fig:axes}, where the cube is centered at the origin. A turn is then a
-real rotation of one layer around an axis. This way the permutation is computed,
-not typed by hand, so it cannot contain a wrong strip.
+face is a view over this array. Each face uses row and column indices from 0 to 2.
+This follows the figure of the statement. To turn a face, we must know where every
+sticker goes. We place each sticker in a 3D frame (Figure~\ref{fig:axes}). The
+cube is centered at the origin. A turn is then a real rotation of one layer. This
+way the permutation is computed, not typed by hand. So it cannot contain a wrong
+strip.
 
 \begin{figure}[H]
 \centering
@@ -220,7 +216,7 @@ We define the search problem with the five components of Lecture 2.
 
 The state space is huge. A real cube has about $4.3 \times 10^{19}$ reachable
 configurations. We cannot store them all. A* must therefore explore as few states
-as possible, which is exactly why a good heuristic matters.
+as possible. This is exactly why a good heuristic matters.
 
 \subsection{The twelve actions}
 
@@ -250,11 +246,10 @@ Id & Method & Notation & Sense & Id & Method & Notation & Sense \\
 
 The course measures a search by three quantities. The branching factor $b$ is the
 number of children of a node. The depth $d$ is the depth of the shallowest goal.
-The maximum path length is $m$. For our problem $b$ is twelve, because each state
-has twelve children. The number of nodes generated by a blind search grows like
-$b^d$. With $b = 12$, even a small depth gives a very large tree. For example,
-$12^7$ is more than thirty million. This is why a uniform cost search cannot go
-deep, and why we need a heuristic.
+The maximum path length is $m$. For our problem $b$ is twelve. Each state has
+twelve children. The number of nodes in a blind search grows like $b^d$. With
+$b = 12$, even a small depth gives a huge tree. For example, $12^7$ is more than
+thirty million. So a uniform cost search cannot go deep. We need a heuristic.
 
 \begin{table}[H]
 \centering
@@ -275,10 +270,10 @@ Worst case space & $O(b^d)$ & the real limit we hit \\
 % ======================================================================
 \section{Program architecture}
 
-The code is written in Java. We chose Java because the statement describes a
-graphical interface, an interface for heuristics, and Java collections such as
-the linked list. The classes follow the statement closely. They are grouped by
-role, as Table~\ref{tab:classes} shows.
+The code is written in Java. We chose Java for several reasons. The statement
+describes a graphical interface and an interface for heuristics. It also uses Java
+collections, such as the linked list. The classes follow the statement closely.
+They are grouped by role, as Table~\ref{tab:classes} shows.
 
 \begin{table}[H]
 \centering
@@ -306,31 +301,27 @@ ui        & \texttt{RubiksCubeSimulator}  & The interface and the solve button \
 
 \subsection{The Cube class}
 
-The \texttt{Cube} class models the game. It stores the 54 stickers and offers the
-twelve turns and the \texttt{isSolved} test. The hard part is to know which
-sticker moves where for each turn. Writing these tables by hand is error prone.
-Instead, we give each sticker a position in 3D and a face normal. We then rotate
-the affected layer with a real 90 degree rotation. We read the permutation back
-from the rotated positions. This is correct by construction.
+The \texttt{Cube} class models the game. It stores the 54 stickers. It offers the
+twelve turns and the \texttt{isSolved} test. The hard part is to know where each
+sticker goes. Writing these tables by hand is error prone. Instead, we give each
+sticker a 3D position and a face normal. We then rotate the affected layer by 90
+degrees. We read the permutation back from the rotated positions. This is correct
+by construction.
 
 We checked the model with algebraic invariants. A turn followed by its inverse is
-the identity. The same turn four times is the identity. A turn and three turns
-the other way give the same result. The number of stickers of each color stays
-nine. The classic sequence R U R' U' returns to the solved cube after exactly six
-repetitions. All these tests pass.
+the identity. The same turn four times is the identity. A turn equals three turns
+the other way. The number of stickers of each color stays nine. The sequence R U
+R' U' has order six. It returns to the solved cube after six repetitions. All
+these tests pass.
 
 \subsection{The State class}
 
-A \texttt{State} is a node of the search tree. It stores the cube, the number of
-actions from the root (the cost $g$), the parent state, the action used to reach
-it, and the heuristic value $h$. The constructor computes $h$ once. The
-\texttt{expand} method applies the twelve turns and returns the twelve children
-in a linked list, as the statement asks. Algorithm~\ref{alg:expand} shows the
-method.
+A \texttt{State} is a node of the search tree. It stores the cube and the cost $g$
+from the root. It also stores the parent and the action used to reach it. Finally
+it stores the heuristic value $h$. The constructor computes $h$ once. The
+\texttt{expand} method applies the twelve turns. It returns the twelve children in
+a linked list, as the statement asks. The Java code below shows the method.
 
-\begin{algorithm}[H]
-\caption{The expand method generates the twelve children.}
-\label{alg:expand}
 \begin{lstlisting}
 public LinkedList<State> expand() {
     LinkedList<State> children = new LinkedList<>();
@@ -341,40 +332,36 @@ public LinkedList<State> expand() {
     return children;
 }
 \end{lstlisting}
-\end{algorithm}
 
-Each child keeps a reference to its parent and to the action that produced it.
-These two fields, called \texttt{pere} and \texttt{actionPere} in the statement,
-let us rebuild the full solution once the goal is reached. We compare two states
-by their cube only. Two paths that reach the same configuration are therefore the
-same state. This is what lets the explored set and the frontier remove
-duplicates.
+Each child keeps a reference to its parent and to its action. These two fields are
+called \texttt{pere} and \texttt{actionPere} in the statement. They let us rebuild
+the solution once the goal is reached. We compare two states by their cube only.
+Two paths to the same configuration are therefore the same state. This lets the
+explored set and the frontier remove duplicates.
 
 \subsection{The explored set and the frontier}
 
 The \texttt{StateSet} class is the explored set. It offers \texttt{add} and
-\texttt{contains}. It also keeps the smallest cost with which each configuration
-was expanded. This lets A* skip a configuration already reached by a cheaper
-path. The \texttt{PriorityQueueState} class is the frontier. It offers
-\texttt{push} and \texttt{pop}. The \texttt{pop} method returns the state with
-the smallest value $f = g + h$. The \texttt{push} method checks if the same
-configuration is already in the frontier and keeps only the better one.
+\texttt{contains}. It also keeps the smallest cost seen for each configuration.
+This lets A* skip a configuration already reached by a cheaper path. The
+\texttt{PriorityQueueState} class is the frontier. It offers \texttt{push} and
+\texttt{pop}. The \texttt{pop} method returns the state with smallest $f = g + h$.
+The \texttt{push} method checks if the configuration is already there. It then
+keeps only the better one.
 
 \subsection{The graphical interface}
 
-The \texttt{RubiksCubeSimulator} class is the interface. It holds a cube and
-draws it as the net of Figure~\ref{fig:net}. It has a \texttt{main} method that
-creates the window. Its \texttt{actionPerformed} method reacts to every button.
-There is one button per turn, a scramble button, a reset button, and the solve
-button. There is also a small menu to pick the strategy.
+The \texttt{RubiksCubeSimulator} class is the interface. It holds a cube and draws
+it as a net (Figure~\ref{fig:net}). It has a \texttt{main} method that creates the
+window. Its \texttt{actionPerformed} method reacts to every button. There is one
+button per turn, plus scramble, reset and solve. A small menu picks the strategy.
 
-When the user presses solve, the program runs A* on a copy of the cube. The
-search runs on a background thread, so the window stays responsive. When the plan
-is ready, the interface plays it move by move on the cube, like a short
-animation. The log panel shows the plan, the number of expanded states, and the
-time. While the search and the animation run, the move buttons are disabled, so
-the user cannot change the cube under the solver. Figure~\ref{fig:gui} shows the
-full window with a scrambled cube.
+When the user presses solve, A* runs on a copy of the cube. The search runs on a
+background thread, so the window stays responsive. The interface then plays the
+plan move by move, like a short animation. The log panel shows the plan, the
+expanded states, and the time. During the search, the move buttons are disabled.
+So the user cannot change the cube under the solver. Figure~\ref{fig:gui} shows
+the full window.
 
 \begin{figure}[H]
 \centering
@@ -395,16 +382,15 @@ function
 \[
 f(n) = g(n) + h(n),
 \]
-where $g(n)$ is the cost from the start to $n$, and $h(n)$ estimates the cost
-from $n$ to the goal. When $h$ is admissible, that is, when it never overestimates
-the real cost, A* returns an optimal solution. With $h = 0$ the function $f$
-becomes $f = g$, so A* behaves as a uniform cost search.
+Here $g(n)$ is the cost from the start to $n$. And $h(n)$ estimates the cost from
+$n$ to the goal. An admissible $h$ never overestimates the real cost. With such an
+$h$, A* returns an optimal solution. With $h = 0$ the function $f$ becomes
+$f = g$. So A* behaves as a uniform cost search.
 
-The course presents several search strategies. Table~\ref{tab:strategies}
-compares the ones we use. The uniform cost search is complete and optimal but
-blind. It explores by cost only. A* keeps the same guarantees but adds the
-heuristic, so it looks toward the goal. This is why A* expands far fewer states
-when the heuristic is good.
+The course presents several search strategies. Table~\ref{tab:strategies} compares
+the ones we use. The uniform cost search is optimal but blind. It explores by cost
+only. A* keeps the same guarantees and adds the heuristic. So it looks toward the
+goal. This is why A* expands far fewer states.
 
 \begin{table}[H]
 \centering
@@ -425,8 +411,7 @@ A*                   & $f = g + h$ & yes (admissible $h$) & yes \\
 
 Figure~\ref{fig:tree} shows a small search tree. Each node carries its values
 $g$, $h$ and $f$. A* always expands the leaf with the smallest $f$. A node that
-looks cheap by $g$ alone may be skipped if its heuristic is large, and the other
-way around.
+looks cheap by $g$ alone may still be skipped. Its heuristic may be large.
 
 \begin{figure}[H]
 \centering
@@ -453,72 +438,77 @@ shaded node has the smallest $f$, so it is expanded first and reaches the goal.}
 \subsection{The solve method}
 
 The \texttt{solve} method follows the A* pseudo code of Lecture 2. It uses the
-frontier and the explored set. It tests the goal when a node is popped, which
-keeps the search optimal. It rebuilds the plan by walking the parent chain and
-reading the action of each node. Algorithm~\ref{alg:astar} shows the method.
+frontier and the explored set. It tests the goal when a node is popped. This
+keeps the search optimal. It then rebuilds the plan by walking the parent chain.
+Algorithm~\ref{alg:astar} shows the method.
 
 \begin{algorithm}[H]
-\caption{The A* search loop, as implemented in solve.}
+\caption{The A* search, as implemented in solve.}
 \label{alg:astar}
-\begin{lstlisting}[style=pseudo]
-push the root state into the frontier
-while the frontier is not empty:
-    node = frontier.pop()                 # smallest f = g + h
-    if node already expanded with a smaller g: continue
-    add node to the explored set
-    if node is the goal: return the plan (walk the parent chain)
-    for each child in node.expand():      # the 12 turns
-        if child already expanded with a smaller g: continue
-        frontier.push(child)
-return failure
-\end{lstlisting}
+\begin{algorithmic}[1]
+\State $\textit{frontier}.\text{push}(\textit{root})$
+\While{$\textit{frontier}$ is not empty}
+    \State $\textit{node} \gets \textit{frontier}.\text{pop}()$ \Comment{smallest $f = g + h$}
+    \If{$\textit{node}$ already expanded with a smaller $g$}
+        \State \textbf{continue}
+    \EndIf
+    \State $\textit{explored}.\text{add}(\textit{node})$
+    \If{$\textit{node}$ is the goal}
+        \State \Return the plan (walk the parent chain)
+    \EndIf
+    \ForAll{$\textit{child}$ in $\textit{node}.\text{expand}()$} \Comment{the 12 turns}
+        \If{$\textit{child}$ already expanded with a smaller $g$}
+            \State \textbf{continue}
+        \EndIf
+        \State $\textit{frontier}.\text{push}(\textit{child})$
+    \EndFor
+\EndWhile
+\State \Return failure
+\end{algorithmic}
 \end{algorithm}
 
 \subsection{Reconstructing the solution}
 
-When the goal is found, we follow the parent links from the goal to the root. At
-each step we read the action that produced the node. We reverse the order. This
-gives the list of moves from the start to the solved cube. The \texttt{solve}
-method returns this list as strings, such as "R" or "U'".
+When the goal is found, we follow the parent links to the root. At each step we
+read the action that produced the node. We reverse the order. This gives the moves
+from the start to the solved cube. The \texttt{solve} method returns them as
+strings, such as "R" or "U'".
 
 \subsection{Why A* is optimal}
 
-The course states that A* is optimal when the heuristic is admissible. The idea
-is simple. A* tests the goal only when a node leaves the frontier with the
-smallest $f$. Suppose this goal node has cost $g$. Because the goal is reached,
-$h$ is zero there, so $f = g$. Any other node $n$ still in the frontier has
-$f(n) = g(n) + h(n)$. Since $h$ never overestimates, $f(n)$ is a lower bound on
-the cost of any solution through $n$. As $n$ was not chosen, $f(n) \ge g$. So no
-cheaper solution can exist. The first goal popped is therefore optimal. We also
-keep an explored set, so a configuration reached again by a longer path is
-skipped, which is the graph version of A* from the course.
+The course states that A* is optimal with an admissible heuristic. The idea is
+simple. A* tests the goal only on the node with smallest $f$. Suppose this goal
+node has cost $g$. The goal is reached, so $h$ is zero there. Thus $f = g$. Any
+other node $n$ in the frontier has $f(n) = g(n) + h(n)$. Since $h$ never
+overestimates, $f(n)$ is a lower bound. It bounds any solution through $n$. As $n$
+was not chosen, $f(n) \ge g$. So no cheaper solution can exist. The first goal
+popped is therefore optimal. We also keep an explored set. A configuration reached
+again by a longer path is skipped. This is the graph version of A*.
 
 \subsection{Data structures}
 
 The frontier is a priority queue ordered by $f$. Java does not offer a cheap way
-to lower the key of an element already in the queue. So when a better path to a
-configuration appears, we push the new entry and mark the old one as out of date.
-Out of date entries are skipped when they are popped. The explored set is a hash
-map from a configuration to its best known cost. Both structures compare states
-by their cube, so they detect repeated configurations and keep the search from
-looping.
+to lower a key already in the queue. So when a better path appears, we push a new
+entry. We mark the old one as out of date. Out of date entries are skipped when
+popped. The explored set is a hash map. It maps a configuration to its best known
+cost. Both structures compare states by their cube. So they detect repeats and
+keep the search from looping.
 
 % ======================================================================
 \section{Heuristics}
 
 A heuristic must be admissible to keep A* optimal. Both of our heuristics come
-from a relaxation of the problem, as in the tutorial on informed search. A
-relaxation removes some rules, so its optimal cost is a lower bound on the real
-cost.
+from a relaxation of the problem. We saw this idea in the tutorial on informed
+search. A relaxation removes some rules. Its optimal cost is then a lower bound on
+the real cost.
 
 \subsection{HeuristicCube: the piece relaxation}
 
-This heuristic assumes that each piece moves on its own. A piece is a corner with
-three stickers or an edge with two stickers. The six centers never move. A piece
-is well placed when all of its stickers are on their target faces. A single turn
-moves four corners and four edges at once. So one turn can fix at most four
-corners and at most four edges. The number of remaining moves is therefore at
-least
+This heuristic assumes that each piece moves on its own. A piece is a corner or an
+edge. A corner has three stickers and an edge has two. The six centers never move.
+A piece is well placed when all its stickers are on target. A single turn moves
+four corners and four edges. So one turn fixes at most four corners. It also fixes
+at most four edges. The number of remaining moves is therefore at least
 \[
 h_{\text{cube}} = \max\left(
 \left\lceil \frac{\text{misplaced corners}}{4} \right\rceil,\;
@@ -531,48 +521,45 @@ admissible.
 \subsection{HeuristicLabel: the sticker relaxation}
 
 This heuristic assumes that each sticker moves on its own. A sticker only needs to
-reach its correct face. We measure the 3D Manhattan distance from its face to its
-target face, counted in quarter turns. The distance is 0 on the correct face, 1
-on an adjacent face, and 2 on the opposite face. We sum this distance over all 54
-stickers. We then divide by the number of stickers that can change face in one
-turn, which is twelve.
+reach its correct face. We measure the 3D Manhattan distance to its target face.
+We count it in quarter turns. The distance is 0 on the correct face. It is 1 on an
+adjacent face and 2 on the opposite face. We sum this distance over all 54
+stickers. We then divide by the stickers moved per turn, which is twelve.
 \[
 h_{\text{label}} = \frac{1}{12} \sum_{s=1}^{54} d(s).
 \]
-One turn moves twelve belt stickers. Each one moves to an adjacent face, so it
-cuts its distance by at most one. The total distance drops by at most twelve per
-move. The number of remaining moves is therefore at least the sum divided by
-twelve. So this heuristic is admissible.
+One turn moves twelve belt stickers. Each one moves to an adjacent face. So each
+one cuts its distance by at most one. The total distance drops by at most twelve
+per move. The remaining moves are therefore at least the sum divided by twelve. So
+this heuristic is admissible.
 
 \subsection{Checking admissibility}
 
-We checked both heuristics by tests. On a cube scrambled with $k$ random moves,
-the heuristic must not exceed $k$, because undoing the scramble takes at most $k$
-moves. We ran this check for many seeds and depths. The heuristic value was always
-at most $k$. We also checked that both heuristics return zero on the solved cube.
-A stronger check appears in the experiments: A* with these heuristics returns the
-same solution length as the uniform cost search, which proves that they keep the
-search optimal.
+We checked both heuristics by tests. Take a cube scrambled with $k$ random moves.
+The heuristic must not exceed $k$. Undoing the scramble takes at most $k$ moves. We
+ran this check for many seeds and depths. The value was always at most $k$. Both
+heuristics also return zero on the solved cube. A stronger check appears in the
+experiments. A* with these heuristics matches the uniform cost search length. This
+proves that they keep the search optimal.
 
 \subsection{A small worked example}
 
 Take a solved cube and apply one move, the turn F. This move sends twelve belt
-stickers to an adjacent face. For the sticker heuristic each of these twelve
-stickers now sits on a face next to its target, so its distance is one. The sum
-is twelve, and $h_{\text{label}} = 12 / 12 = 1$. The true cost is also one, so the
-estimate is exact here. For the piece heuristic this same move misplaces four
-corners and four edges. So the value is $\max(\lceil 4/4 \rceil, \lceil 4/4
-\rceil) = 1$. Both heuristics agree with the real cost of one move.
+stickers to an adjacent face. For the sticker heuristic, each one is now next to
+its target. So its distance is one. The sum is twelve, and
+$h_{\text{label}} = 12 / 12 = 1$. The true cost is also one. So the estimate is
+exact here. For the piece heuristic, this move misplaces four corners and four
+edges. So the value is $\max(\lceil 4/4 \rceil, \lceil 4/4 \rceil) = 1$. Both
+heuristics agree with the real cost of one move.
 
 \subsection{Comparing the two heuristics}
 
-A heuristic $h_a$ dominates another $h_b$ when $h_a(n) \ge h_b(n)$ for every
-state $n$, while both stay admissible. A dominating heuristic is never worse, and
-it usually expands fewer states. In our tests the sticker heuristic gives larger
-values on most scrambled cubes, so it guides the search better. The experiments
-in Section 6 confirm this: the sticker heuristic expands fewer states than the
-piece heuristic at the same depth. Both remain admissible, so both keep A*
-optimal.
+A heuristic $h_a$ dominates $h_b$ when $h_a(n) \ge h_b(n)$ for every state $n$.
+Both must stay admissible. A dominating heuristic is never worse. It usually
+expands fewer states. In our tests the sticker heuristic gives larger values. So
+it guides the search better. The experiments in Section 6 confirm this. The
+sticker heuristic expands fewer states at the same depth. Both stay admissible, so
+both keep A* optimal.
 
 % ======================================================================
 \section{Experiments}
@@ -581,10 +568,10 @@ optimal.
 
 We measured three strategies. The first is the uniform cost search, where $h = 0$.
 The second is A* with the piece heuristic. The third is A* with the sticker
-heuristic. For each strategy and each scramble depth, we solved several cubes. We
-recorded the success rate, the average number of expanded states, the average
-time, and the average solution length. A run fails when it expands more states
-than a fixed limit. The seeds are fixed, so the numbers can be reproduced.
+heuristic. For each strategy and depth, we solved several cubes. We recorded the
+success rate and the average expanded states. We also recorded the average time
+and solution length. A run fails when it passes a fixed node limit. The seeds are
+fixed, so the numbers can be reproduced.
 
 \subsection{Results}
 
@@ -614,10 +601,10 @@ fails from depth seven under the node limit.}
 \label{tab:results}
 \end{table}
 
-Figure~\ref{fig:plot} draws the number of expanded states on a logarithmic
-scale. The gap between the uniform cost search and A* grows very fast. At depth
-six the difference is about three orders of magnitude. The two A* curves stay low
-and close, with the sticker heuristic slightly below the piece heuristic.
+Figure~\ref{fig:plot} draws the expanded states on a logarithmic scale. The gap
+between the uniform cost search and A* grows very fast. At depth six the gap is
+about three orders of magnitude. The two A* curves stay low and close. The sticker
+heuristic is slightly below the piece heuristic.
 
 \begin{figure}[H]
 \centering
@@ -652,11 +639,11 @@ depth six within memory. Both A* curves stay low.}
 
 \subsection{A complete example}
 
-To make the result concrete, we scramble a solved cube with seven moves and solve
-it with the sticker heuristic. Table~\ref{tab:example} shows the scramble, the
-plan, and the search effort. The plan has seven moves, so it is optimal. We can
-also see that the plan is the scramble read backward, with each move replaced by
-its inverse. This is the shortest way to undo the scramble, and A* finds it.
+We scramble a solved cube with seven moves. We solve it with the sticker
+heuristic. Table~\ref{tab:example} shows the scramble, the plan, and the effort.
+The plan has seven moves, so it is optimal. The plan is also the scramble read
+backward. Each move is replaced by its inverse. This is the shortest way to undo
+the scramble. A* finds it.
 
 \begin{table}[H]
 \centering
@@ -677,40 +664,66 @@ scramble in the optimal number of moves.}
 
 \subsection{Optimality}
 
-The solution length is the same for the three strategies at every depth. For
-example, the average length is 6.0 at depth six and 7.6 at depth eight, for all
-three. This is an empirical proof that the heuristics are admissible. A heuristic
-that overestimated the cost would make A* return a longer plan than the uniform
-cost search. This never happens.
+The solution length is the same for all three strategies at every depth. For
+example, the average length is 6.0 at depth six. It is 7.6 at depth eight, for all
+three. This is an empirical proof that the heuristics are admissible. An
+overestimating heuristic would make A* return a longer plan. This never happens.
 
 \subsection{Discussion}
 
 The experiments confirm the course. First, the heuristic does not change the
-answer, only the effort to find it. The plans stay optimal. Second, a good
-heuristic gives huge savings. At depth six the uniform cost search expands about
-$500\,000$ states, while A* expands a few hundred. Third, the sticker heuristic
-dominates the piece heuristic here, because it gives finer values. Finally, A*
-runs out of memory before it runs out of time, exactly as the slides state. The
-limit we hit first is the number of stored states, not the clock.
+answer. It only changes the effort. The plans stay optimal. Second, a good
+heuristic gives huge savings. At depth six, the uniform cost search expands about
+$500\,000$ states. A* expands a few hundred. Third, the sticker heuristic dominates
+the piece heuristic here. It gives finer values. Finally, A* runs out of memory
+before it runs out of time. This matches the slides. The first limit is the stored
+states, not the clock.
+
+\subsection{How far A* can go}
+
+We pushed the sticker heuristic, our strongest one, to deeper scrambles.
+Table~\ref{tab:deep} shows the cost as the depth grows. The effort grows fast,
+about ten times per added move. Depth eight is solved in a tenth of a second.
+Depth ten still works. But it expands half a million states. It then takes about
+twelve seconds. Beyond depth ten the frontier no longer fits in memory. So our
+solver stays practical up to about nine or ten random moves. This is the answer
+to the question of the statement.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{rrrr}
+\toprule
+Scramble depth & Expanded states & Solution length & Time (s) \\
+\midrule
+8  & 6\,818   & 7.0 & 0.1 \\
+9  & 71\,359  & 8.7 & 1.7 \\
+10 & 495\,949 & 9.3 & 11.8 \\
+\bottomrule
+\end{tabular}
+\caption{A* with the sticker heuristic on deeper scrambles, averaged over six
+cubes per depth. The cost grows by about an order of magnitude per move.}
+\label{tab:deep}
+\end{table}
 
 \subsection{A simple optimization}
 
 We also added one optional optimization. After a move, we never apply its inverse
 right away. For example we never play U' just after U. Such a pair cancels out, so
 it can never belong to an optimal solution. Skipping it keeps the search optimal
-and makes the tree smaller. This option is turned off by default, so the
-\texttt{solve} method stays close to the pseudo code of the course. When it is
-turned on, A* expands fewer states at the same depth.
+and makes the tree smaller. This option is off by default. So the \texttt{solve}
+method stays close to the course pseudo code. When it is on, A* expands fewer
+states at the same depth.
 
 \subsection{Methodology}
 
 We built the project with a test first method. For each class we wrote the tests
 before the code. We made the tests fail, then wrote the code until they passed.
 The cube tests check the algebraic invariants. The search tests check that the
-plan really solves the cube and that A* matches the optimal length. In total the
-project has twenty four tests, and they all pass. The code was also reviewed,
-which helped us find and fix a rotation that turned the wrong way and a few
-performance issues.
+plan really solves the cube. They also check that A* matches the optimal length.
+In total the project has twenty four tests, and they all pass. The code was also
+reviewed. The review helped us find and fix a rotation that turned the wrong way.
+It also pointed out a few performance issues.
 
 \subsection{Limits}
 
@@ -724,15 +737,15 @@ are outside the scope of this lab.
 
 We built a program that solves the Rubik's Cube with the A* algorithm. We modeled
 the cube as a search problem with the five components of the course. We followed
-the statement and built the classes Cube, State, Astar, StateSet,
-PriorityQueueState, and the heuristics. We first ran a uniform cost search. We
-then added two admissible heuristics, both from a relaxation of the problem.
+the statement and built every required class. We first ran a uniform cost search.
+We then added two admissible heuristics. Both come from a relaxation of the
+problem.
 
 The results match the theory. A* returns an optimal solution. A good heuristic
 cuts the number of expanded states by several orders of magnitude. The uniform
-cost search fails from about seven random moves, while A* solves more scrambled
-cubes. The main limit is memory, not time. This project gave us a clear, hands on
-view of informed search and of why heuristics matter.
+cost search fails from about seven random moves. A* solves more scrambled cubes.
+The main limit is memory, not time. This project gave us a clear view of informed
+search. It showed us why heuristics matter.
 
 \subsection*{Team contributions}
 
@@ -740,6 +753,6 @@ The three members worked together on the design and the report. The work was
 shared as follows. One member focused on the cube model and the turns. One member
 focused on the A* search and the data structures. One member focused on the two
 heuristics and the experiments. The interface, the tests, and the writing were a
-shared effort, with regular reviews between the members.
+shared effort. The members reviewed each other's work regularly.
 
 \end{document}
