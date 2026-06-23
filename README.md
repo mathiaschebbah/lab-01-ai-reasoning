@@ -29,9 +29,11 @@ java -jar target/rubiks-cube-astar.jar
 ```
 
 The window shows the cube as an unfolded net. The twelve buttons apply the
-quarter turns. The Scramble button mixes the cube. The Solve button runs A* with
-the selected strategy and then animates the solution. The strategy menu chooses
-between the two heuristics and the uniform cost search.
+quarter turns. The Scramble button mixes the cube with the number of random moves
+chosen in the adjacent `moves` field (8 by default; A* stays practical up to about
+nine or ten). The Solve button runs A* with the selected strategy and then
+animates the solution. The strategy menu chooses between the two heuristics and
+the uniform cost search.
 
 ## Run the benchmark
 

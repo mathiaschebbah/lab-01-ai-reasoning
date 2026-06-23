@@ -23,7 +23,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
@@ -45,6 +47,15 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
     private final JLabel status = new JLabel("Ready.");
     private final JComboBox<String> heuristicChoice =
             new JComboBox<>(new String[] {"A* HeuristicLabel", "A* HeuristicCube", "UCS (h = 0)"});
+
+    /**
+     * Number of random moves used by the scramble button. It is configurable
+     * because A* stays practical up to about nine or ten moves, and the user can
+     * thus explore that limit directly from the interface. It defaults to eight,
+     * which is solved quickly by both heuristics.
+     */
+    private final JSpinner scrambleDepth =
+            new JSpinner(new SpinnerNumberModel(8, 1, 20, 1));
 
     /** Buttons that must be disabled while a search or animation runs. */
     private final JPanel controls = new JPanel();
@@ -84,6 +95,10 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         // Row of high level actions.
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         scrambleButton = makeButton("Scramble", "scramble", actions);
+        actions.add(new JLabel("moves:"));
+        scrambleDepth.setToolTipText("Number of random moves applied by Scramble. "
+                + "A* stays practical up to about nine or ten moves.");
+        actions.add(scrambleDepth);
         solveButton = makeButton("Solve", "solve", actions);
         resetButton = makeButton("Reset", "reset", actions);
         actions.add(new JLabel("  Strategy:"));
@@ -144,14 +159,15 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
     }
 
     private void scramble() {
+        int depth = (Integer) scrambleDepth.getValue();
         Scrambler scrambler = new Scrambler();
-        List<Integer> applied = scrambler.scramble(cube, 12);
+        List<Integer> applied = scrambler.scramble(cube, depth);
         cubePanel.setCube(cube);
         StringBuilder sb = new StringBuilder();
         for (int action : applied) {
             sb.append(Move.notation(action)).append(' ');
         }
-        log.setText("Scrambled with 12 moves:\n" + sb.toString().trim() + "\n");
+        log.setText("Scrambled with " + depth + " moves:\n" + sb.toString().trim() + "\n");
         status.setText("Scrambled. Press Solve.");
     }
 
@@ -257,6 +273,7 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         scrambleButton.setEnabled(!busy);
         resetButton.setEnabled(!busy);
         heuristicChoice.setEnabled(!busy);
+        scrambleDepth.setEnabled(!busy);
         for (JButton button : moveButtons) {
             button.setEnabled(!busy);
         }
