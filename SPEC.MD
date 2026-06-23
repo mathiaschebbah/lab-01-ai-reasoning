@@ -1,5 +1,5 @@
 <task>
-Le but est de générer de bout en bout le projet de groupe de Mathias CHEBBAH, Lamine BETRAOUI, BOUNA SALL, Étudiants en M1 MIAGE, pour le cours d'Artificial Intelligence and Reasoning, par toi, en totale autonomie. (voir) @Lab 1 - Solveur Rubik's Cube (Astar).pdf
+Le but est de générer de bout en bout le projet de groupe de Mathias CHEBBAH, Lamine BETRAOUI, BOUNA SALL, Étudiants en M1 MIAGE, pour le cours d'Artificial Intelligence and Reasoning, par toi, en totale autonomie. (voir) @Lab 1 - Solveur Rubik's Cube (Astar).pdf.
 </task>
 
 <teachers_mail>
@@ -27,7 +27,7 @@ Groups will present one after another according to the schedule that will be com
 </teachers_mail>
 
 <instructions>
-0. Initialise le repo si pas déjà fait, et vérifie que le repo est propre. On utilisera ça pour tracker notre travail. Spin up un .gitignore, mais n'ajoute pas, le .pdf, c'est important qu'il soit stagé. Utilise uv venv pour créer un environnement venv isolé.
+0. Initialise le repo si pas déjà fait, et vérifie que le repo est propre. On utilisera ça pour tracker notre travail. Spin up un .gitignore, mais n'ajoute pas, le .pdf, c'est important qu'il soit stagé. Initialise l'environnement de développement. Mes camarades et moi hésitons sur le choix du langage, (à priori ça se décide entre Python et Java, tranche, suis le langage qui se rapproche le plus de l'énoncé, et qui aboutierait au meilleur résultat)
 1. Lis tous les cours dans /Users/mathias/Desktop/Cours/ai_reasoning/, les "Cours" et les "TD". Il faut que tu les lises au maximum dans ton contexte, pour en comprendre le sens.
 Pourquoi pas avec des subagents ? Car tu as besoin de comprendre comment fonctionnent chaque cours, la pédagogie du professeur, pour rester dans le scope. Ensuite, lis @Lab 1 - Solveur Rubik's Cube (Astar).pdf. C'est l'énoncé du projet que l'on doit réaliser.
 2.0 Après avoir lu le sujet, découpe le travail en petites étapes (voir 2.1). Le but est que tu comprennes le découpage logique de l'énoncé, chaque gate, pour ensuite construire des boucles de vérification (voir 2.2, 2.3)
@@ -59,5 +59,18 @@ Pour que la présentation soit conforme, elle doit respecter ces critères.
 7. Exactement 9 transparents (sans compter la couverture), idée est que 3*3=9, chaque intervenant couvre un transparent.
 8. Ne pas ajouter de mots, théories, formulations, noms qui ne sont pas explicitement dans le cours.
 </presentations_instructions>
+
+<loops>
+Crucial : Je porte ton attention particulière sur les loops de vérification.
+Créé des loops où tu te promptes toi même, en invoquant /loop 30 minutes (ou 20 minutes), pour suivre le travail.
+
+Tu dois utiliser cette méthodologie pour réussir à faire un travail longue durée. Comme demandé dans les instructions CLAUDE.MD globale, tu dois fréquemment utiliser 'date'. Cela a pour but de te donner conscience du temps, et aussi te faire comprendre que tu vas devoir travailler durant de longues heures.
+Tu dois par conséquent programmer des boucles de réveil au sein de ton harness, pour t'assurer que tu continueras à travailler longtemps.
+Ainsi, je ne te prompte qu'une fois (dans ce document SPEC.MD), ensuite, tu devrass prendre le relais, et exécuter des boucles qui vérifient plusieurs fois le travail, jusqu'à perfection, et satisfaction de mon intent, qui nous permettera d'avoir la note maximale. Tu dois relire plusieurs fois SPEC.MD au cours du temps, et du travail, pour vérifier que tu ne dérives pas, tu ne saurais te contenter que d'une seule lecture.
+</loops>
+
+<user_is_afk>
+Comme tu es en autonomie, tu ne dois pas me demander mon aide. Si tu es bloqué, débloque toi en choissisant la solution la plus logique. Arbitre. Je ne regarderais pas la session, je reviendrais plus tard, tu as le temps et je reviendrais dans plusieurs heures. Mathias is afk, go ahead and push.
+<user_is_afk>
 
 </instructions>
