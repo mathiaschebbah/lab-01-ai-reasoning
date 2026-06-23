@@ -46,6 +46,9 @@ Thumbs.db
 *.swp
 *~
 
+# --- Submission artifact (reproducible via make_submission.sh) ---
+RubiksCube_Astar_*.zip
+
 # NOTE: PDF files are intentionally NOT ignored.
 # The project statement PDF and the final report/presentation PDFs
 # must remain tracked in the repository (required for submission).
