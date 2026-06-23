@@ -2,6 +2,7 @@ package fr.dauphine.miage.ai.rubik.search;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.dauphine.miage.ai.rubik.heuristic.HeuristicCube;
@@ -121,6 +122,40 @@ class AstarTest {
 
         assertTrue(astarExpanded <= ucsExpanded,
                 "A* (" + astarExpanded + ") should not expand more than UCS (" + ucsExpanded + ")");
+    }
+
+    @Test
+    @DisplayName("A tiny time budget makes a deep search give up with a TIMEOUT outcome")
+    void timeBudgetStopsHopelessSearch() {
+        State.heuristic = new ZeroHeuristic();
+        // A depth 9 scramble is far beyond what UCS solves in one millisecond.
+        Cube cube = scramble(9, 7);
+        Astar astar = new Astar(cube);
+        astar.setTimeBudgetMillis(1);
+
+        long start = System.nanoTime();
+        List<String> plan = astar.solve();
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        assertNull(plan, "An out of time search must return null");
+        assertEquals(Astar.Outcome.TIMEOUT, astar.getLastOutcome(),
+                "The search must report that it ran out of time");
+        assertTrue(elapsedMs < 2_000,
+                "The budget must stop the search quickly, took " + elapsedMs + " ms");
+    }
+
+    @Test
+    @DisplayName("A time budget does not prevent solving an easy scramble")
+    void timeBudgetStillSolvesEasyScramble() {
+        State.heuristic = new HeuristicLabel();
+        Cube cube = scramble(4, 11);
+        Astar astar = new Astar(cube);
+        astar.setTimeBudgetMillis(5_000);
+
+        List<String> plan = astar.solve();
+        assertNotNull(plan, "An easy scramble must still be solved within a generous budget");
+        assertEquals(Astar.Outcome.SOLVED, astar.getLastOutcome());
+        assertTrue(applyAndCheck(cube, plan));
     }
 
     // ------------------------------------------------------------------

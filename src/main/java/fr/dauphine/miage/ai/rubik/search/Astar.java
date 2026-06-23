@@ -34,6 +34,33 @@ public final class Astar {
     private long expansionLimit = 20_000_000L;
 
     /**
+     * Optional wall-clock budget in milliseconds. When greater than zero, the
+     * search gives up as soon as it has run for longer than this budget. It lets
+     * a caller (the benchmark) bound the time spent on a hopeless configuration,
+     * instead of waiting for the expansion limit to be reached. Zero disables it,
+     * which keeps the default behavior unchanged.
+     */
+    private long timeBudgetMillis = 0L;
+
+    /**
+     * Why the last {@link #solve()} call stopped. It lets a caller tell an honest
+     * "no solution" apart from a search that simply ran out of time or nodes.
+     */
+    public enum Outcome {
+        /** A solution was found (or the cube was already solved). */
+        SOLVED,
+        /** The wall-clock time budget was exceeded. */
+        TIMEOUT,
+        /** The expansion (node) limit was reached. */
+        NODE_LIMIT,
+        /** The frontier emptied without reaching the goal (should not happen). */
+        EXHAUSTED
+    }
+
+    /** Outcome of the last {@link #solve()} call. */
+    private Outcome lastOutcome = Outcome.EXHAUSTED;
+
+    /**
      * Optional optimization: when {@code true}, a successor whose action is the
      * exact inverse of the action that produced the current node is skipped (for
      * example, never apply U' right after U). Such a move would simply undo the
@@ -67,6 +94,20 @@ public final class Astar {
     }
 
     /**
+     * Sets a wall-clock budget for the search.
+     *
+     * @param millis the budget in milliseconds, or {@code 0} to disable it
+     */
+    public void setTimeBudgetMillis(long millis) {
+        this.timeBudgetMillis = millis;
+    }
+
+    /** @return why the last solve call stopped. */
+    public Outcome getLastOutcome() {
+        return lastOutcome;
+    }
+
+    /**
      * Enables or disables the inverse move pruning optimization.
      *
      * @param prune {@code true} to skip successors that immediately undo the
@@ -96,6 +137,14 @@ public final class Astar {
     public List<String> solve() {
         expandedCount = 0;
         generatedCount = 0;
+        lastOutcome = Outcome.EXHAUSTED;
+
+        // Wall-clock deadline, only computed when a budget was requested. The
+        // System.nanoTime() check is throttled below to stay cheap.
+        final boolean timed = timeBudgetMillis > 0;
+        final long deadline = timed
+                ? System.nanoTime() + timeBudgetMillis * 1_000_000L
+                : 0L;
 
         frontier.push(root);
         generatedCount++;
@@ -114,11 +163,19 @@ public final class Astar {
 
             // Goal test on expansion guarantees optimality for A* graph search.
             if (node.isGoal()) {
+                lastOutcome = Outcome.SOLVED;
                 return reconstructPath(node);
             }
 
             if (expandedCount >= expansionLimit) {
+                lastOutcome = Outcome.NODE_LIMIT;
                 return null; // Give up: too scrambled to solve within the limit.
+            }
+            // Check the wall-clock budget every 4096 expansions to keep the
+            // System.nanoTime() cost negligible compared to the search itself.
+            if (timed && (expandedCount & 0xFFF) == 0 && System.nanoTime() >= deadline) {
+                lastOutcome = Outcome.TIMEOUT;
+                return null; // Give up: out of time on this configuration.
             }
             expandedCount++;
 

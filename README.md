@@ -38,13 +38,33 @@ the uniform cost search.
 ## Run the benchmark
 
 ```bash
-# arguments: maxDepth instancesPerDepth nodeLimit pruneInverseMoves
-java -Xmx4g -cp target/classes fr.dauphine.miage.ai.rubik.app.Benchmark 8 5 1500000 false
+# A plain run: all strategies, sensible defaults, never hangs.
+java -cp target/classes fr.dauphine.miage.ai.rubik.app.Benchmark
+
+# A* only, deeper scrambles, no waiting on the uniform cost search.
+java -cp target/classes fr.dauphine.miage.ai.rubik.app.Benchmark strategies=cube,label maxDepth=11
+
+# See every option.
+java -cp target/classes fr.dauphine.miage.ai.rubik.app.Benchmark --help
 ```
 
-The benchmark prints, for each strategy and scramble depth, the success rate, the
-average number of expanded states, the average time, and the average solution
-length.
+Arguments are named `key=value` and all optional:
+
+| key | meaning | default |
+|-----|---------|---------|
+| `strategies` | which strategies to run (`ucs`, `cube`, `label`) | all |
+| `maxDepth` | deepest scramble to try | `12` |
+| `instances` | cubes solved per depth | `3` |
+| `timeMs` | time budget per cube, in milliseconds | `5000` |
+| `nodeLimit` | maximum expanded states per cube | `20000000` |
+| `prune` | skip inverse moves | `false` |
+
+The benchmark prints, for each strategy and depth, the success rate, the average
+expanded states, the average time, the average solution length, and a short note
+(`solved`, `timeout`, `node-limit`). Each strategy stops on its own once a depth
+solves nothing within the time budget, and reports how deep it stayed practical.
+The old positional form (`Benchmark maxDepth instances nodeLimit prune`) still
+works.
 
 ## Project layout
 
