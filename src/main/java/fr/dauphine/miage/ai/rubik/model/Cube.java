@@ -57,14 +57,19 @@ public final class Cube {
         }
     }
 
-    /** Private copy constructor. */
-    private Cube(char[] stickers) {
-        this.stickers = stickers.clone();
+    /**
+     * Private constructor that takes ownership of the given array. The caller
+     * must not keep or reuse it. {@link #copy()} passes a fresh clone, and
+     * {@link #withAction(int)} passes a freshly built array, so no two cubes ever
+     * share their sticker array.
+     */
+    private Cube(char[] ownedStickers) {
+        this.stickers = ownedStickers;
     }
 
     /** @return a deep copy of this cube. */
     public Cube copy() {
-        return new Cube(this.stickers);
+        return new Cube(this.stickers.clone());
     }
 
     /** Resets this cube in place to the solved configuration. */
