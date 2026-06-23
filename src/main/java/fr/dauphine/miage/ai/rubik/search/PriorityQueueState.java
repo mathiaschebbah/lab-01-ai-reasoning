@@ -62,7 +62,7 @@ public final class PriorityQueueState {
         State candidate;
         while ((candidate = queue.poll()) != null) {
             Integer best = bestEvaluation.get(candidate);
-            if (best != null && best == candidate.getEvaluation()) {
+            if (best != null && best.intValue() == candidate.getEvaluation()) {
                 // This is the live (best) entry for its configuration.
                 bestEvaluation.remove(candidate);
                 return candidate;
