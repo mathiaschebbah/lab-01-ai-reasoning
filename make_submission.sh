@@ -5,7 +5,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
-NAME="RubiksCube_Astar_CHEBBAH_BETRAOUI_SALL"
+NAME="RubiksCube_Astar_CHEBBAH_BETRAOUI_SALL_BARBIER"
 OUT="${NAME}.zip"
 
 # Make sure the report and presentation PDFs are up to date.

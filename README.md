@@ -3,7 +3,7 @@
 Artificial Intelligence and Reasoning, Lab 1.
 Master 1 MIAGE, Universite Paris Dauphine, PSL.
 
-Authors: Mathias CHEBBAH, Lamine BETRAOUI, Bouna SALL.
+Authors: Mathias CHEBBAH, Lamine BETRAOUI, Bouna SALL, Hugues BARBIER.
 
 This project solves a Rubik's Cube with the A* search algorithm seen in Lecture
 2. It models the cube as a search problem, runs a uniform cost search, and then
@@ -18,7 +18,7 @@ problem.
 ## Build and test
 
 ```bash
-mvn clean test        # compile and run the 24 unit tests
+mvn clean test        # compile and run the 36 unit tests
 mvn package           # build the executable jar in target/
 ```
 
@@ -60,11 +60,14 @@ Arguments are named `key=value` and all optional:
 | `prune` | skip inverse moves | `false` |
 
 The benchmark prints, for each strategy and depth, the success rate, the average
-expanded states, the average time, the average solution length, and a short note
-(`solved`, `timeout`, `node-limit`). Each strategy stops on its own once a depth
-solves nothing within the time budget, and reports how deep it stayed practical.
-The old positional form (`Benchmark maxDepth instances nodeLimit prune`) still
-works.
+expanded and generated states, the effective branching factor (states added to
+the frontier per expanded node), the average peak frontier size (the memory the
+search needs), the average time, the search throughput in states per second, the
+average solution length, and a short note (`solved`, `timeout`, `node-limit`,
+`mixed`). A closing summary lists the practical scramble depth per strategy. Each
+strategy stops on its own once a depth solves nothing within the time budget, and
+reports how deep it stayed practical. The old positional form
+(`Benchmark maxDepth instances nodeLimit prune`) still works.
 
 ## Project layout
 

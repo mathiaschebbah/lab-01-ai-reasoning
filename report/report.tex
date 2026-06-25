@@ -570,10 +570,10 @@ both keep A* optimal.
 We measured three strategies. The first is the uniform cost search, where $h = 0$.
 The second is A* with the piece heuristic. The third is A* with the sticker
 heuristic. For each strategy and depth, we solved five cubes. We recorded the
-success rate, the average expanded and generated states, the average peak frontier
-size, the average time, and the solution length. A run fails when it passes a node
-limit or a time budget. The seeds are fixed, so the numbers can be reproduced with
-our benchmark.
+success rate and the solution length. We also recorded the expanded and generated
+states. We recorded the peak frontier size and the time. A run fails when it passes
+a node limit or a time budget. The seeds are fixed, so the numbers can be
+reproduced with our benchmark.
 
 \subsection{Results}
 
@@ -695,9 +695,10 @@ scramble in the optimal number of moves.}
 
 The solution length is the same for every strategy that solves the same cubes.
 Up to depth six the three strategies all succeed. They return the same average
-length, for example 6.0 at depth six. From depth seven UCS fails, but the two
-heuristics agree: 6.6 at depth seven, 7.6 at depth eight, 8.6 at depth nine. This
-is an empirical proof that the heuristics are admissible. An overestimating
+length, for example 6.0 at depth six. From depth seven UCS fails. But the two
+heuristics still agree. They give 6.6 at depth seven and 7.6 at depth eight. They
+give 8.6 at depth nine. This is an empirical proof that the heuristics are
+admissible. An overestimating
 heuristic would make A* return a longer plan. This never happens.
 
 \subsection{Discussion}
