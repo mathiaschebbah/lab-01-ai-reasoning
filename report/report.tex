@@ -716,27 +716,37 @@ states, not the clock.
 We pushed the sticker heuristic, our strongest one, to deeper scrambles.
 Table~\ref{tab:deep} shows the cost as the depth grows. The effort grows fast,
 about ten times per added move. Depth eight is solved in under a tenth of a second.
-Depth ten still works. But it expands about four hundred thousand states. It then
-takes about four seconds. Beyond depth ten the frontier no longer fits in memory.
-So our solver stays practical up to about ten random moves. This is the answer to
-the question of the statement.
+Depth ten still works at full success. It expands about four hundred thousand
+states. It then takes about four seconds. At depth eleven and twelve the success
+rate drops. The frontier no longer fits in memory. So our solver stays fully
+practical up to about ten random moves.
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{rrrrr}
+\begin{tabular}{rrrrrr}
 \toprule
-Scramble depth & Expanded & Generated & Solution length & Time (s) \\
+Scramble depth & Success & Expanded & Generated & Solution length & Time (s) \\
 \midrule
-8  & 5\,793    & 57\,529    & 7.6 & 0.06 \\
-9  & 46\,577   & 459\,586   & 8.6 & 0.51 \\
-10 & 405\,915  & 4\,002\,675 & 9.6 & 4.54 \\
+8  & 100\% & 5\,793    & 57\,529    & 7.6 & 0.06 \\
+9  & 100\% & 46\,577   & 459\,586   & 8.6 & 0.51 \\
+10 & 100\% & 405\,915  & 4\,002\,675 & 9.6 & 4.54 \\
+11 & 60\%  & 72\,978   & 720\,017   & 9.0 & 1.43 \\
+12 & 40\%  & 257\,030  & 2\,528\,260 & 9.0 & 3.84 \\
 \bottomrule
 \end{tabular}
-\caption{A* with the sticker heuristic on deeper scrambles, averaged over five
-cubes per depth. The cost grows by about an order of magnitude per move.}
+\caption{A* with the sticker heuristic on deeper scrambles, over five cubes per
+depth. Up to depth ten the cost grows by about an order of magnitude per move.}
 \label{tab:deep}
 \end{table}
+
+The numbers at depth eleven and twelve look smaller, which is a surprise. The
+reason is the scramble. A scramble of $k$ random moves is not always $k$ moves from
+the goal. Some moves cancel or combine, so the true distance is often less. At
+depth eleven and twelve only the easy cubes finish within the budget. The hard ones
+time out and leave the average. This is why the solved cubes there show a length of
+nine. The honest limit is the success rate. It falls below one hundred percent from
+depth eleven.
 
 \subsection{A simple optimization}
 
