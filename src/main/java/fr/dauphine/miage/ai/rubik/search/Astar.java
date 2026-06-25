@@ -84,7 +84,11 @@ public final class Astar {
      */
     private long peakFrontierSize;
 
-    /** Largest size the explored set reached during the last solve. */
+    /**
+     * Largest size the explored (closed) set reached during the last solve, that
+     * is the number of distinct configurations recorded as expanded. It grows by
+     * one each time a fresh node is added to the closed set.
+     */
     private long peakExploredSize;
 
     /**
@@ -173,6 +177,10 @@ public final class Astar {
         peakExploredSize = 0;
         lastOutcome = Outcome.EXHAUSTED;
 
+        // Reset the search structures so the same Astar object can solve again.
+        frontier.clear();
+        explored.clear();
+
         // Wall-clock deadline, only computed when a budget was requested. The
         // System.nanoTime() check is throttled below to stay cheap.
         final boolean timed = timeBudgetMillis > 0;
@@ -180,8 +188,12 @@ public final class Astar {
                 ? System.nanoTime() + timeBudgetMillis * 1_000_000L
                 : 0L;
 
+        // The root is the start node, not a generated successor, so it is not
+        // counted in generatedCount. Seeding the peak here makes the frontier
+        // metric correct even when the search exits immediately (solved root,
+        // node limit or time budget reached on the first pop).
         frontier.push(root);
-        generatedCount++;
+        peakFrontierSize = frontier.size();
 
         while (!frontier.isEmpty()) {
             State node = frontier.pop();

@@ -145,6 +145,28 @@ class AstarTest {
     }
 
     @Test
+    @DisplayName("Calling solve twice on the same object returns the same result")
+    void solveIsRepeatable() {
+        State.heuristic = new HeuristicCube();
+        Cube cube = scramble(6, 909);
+        Astar astar = new Astar(cube);
+
+        List<String> first = astar.solve();
+        long firstExpanded = astar.getExpandedCount();
+        assertNotNull(first);
+
+        // A second call must reset the frontier and the explored set, otherwise it
+        // would find the root already explored and fail with bogus metrics.
+        List<String> second = astar.solve();
+        assertNotNull(second, "A repeated solve must not fail on a stale explored set");
+        assertEquals(Astar.Outcome.SOLVED, astar.getLastOutcome());
+        assertEquals(first.size(), second.size(), "Both solves return the same length");
+        assertEquals(firstExpanded, astar.getExpandedCount(),
+                "A deterministic search expands the same number of states each time");
+        assertTrue(applyAndCheck(cube, second));
+    }
+
+    @Test
     @DisplayName("An already solved cube reports a SOLVED outcome and no expansion")
     void solvedCubeOutcome() {
         State.heuristic = new ZeroHeuristic();

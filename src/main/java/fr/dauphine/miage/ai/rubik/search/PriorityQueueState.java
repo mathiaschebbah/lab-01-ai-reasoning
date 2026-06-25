@@ -92,4 +92,10 @@ public final class PriorityQueueState {
     public int size() {
         return bestEvaluation.size();
     }
+
+    /** Empties the frontier so the same search object can be reused. */
+    public void clear() {
+        queue.clear();
+        bestEvaluation.clear();
+    }
 }

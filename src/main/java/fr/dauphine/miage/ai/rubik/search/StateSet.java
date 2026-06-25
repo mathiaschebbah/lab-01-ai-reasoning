@@ -60,4 +60,9 @@ public final class StateSet {
     public int size() {
         return bestCostByState.size();
     }
+
+    /** Empties the explored set so the same search object can be reused. */
+    public void clear() {
+        bestCostByState.clear();
+    }
 }
