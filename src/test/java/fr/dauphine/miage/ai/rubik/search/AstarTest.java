@@ -106,6 +106,55 @@ class AstarTest {
     }
 
     @Test
+    @DisplayName("The search reports the states it generated and its branching")
+    void generatedAndBranchingAreReported() {
+        State.heuristic = new HeuristicCube();
+        Cube cube = scramble(6, 321);
+        Astar astar = new Astar(cube);
+        astar.solve();
+
+        long expanded = astar.getExpandedCount();
+        long generated = astar.getGeneratedCount();
+        assertTrue(expanded > 0, "A non trivial scramble expands at least one state");
+        assertTrue(generated >= expanded,
+                "Every expanded state was generated first, so generated (" + generated
+                        + ") >= expanded (" + expanded + ")");
+        // The effective branching factor is generated per expanded; with twelve
+        // moves and duplicate detection it must stay within (0, 12].
+        double branching = (double) generated / expanded;
+        assertTrue(branching > 0 && branching <= 12.0,
+                "Effective branching " + branching + " must be in (0, 12]");
+    }
+
+    @Test
+    @DisplayName("The search reports the peak size of the frontier and the explored set")
+    void peakSizesAreReported() {
+        State.heuristic = new HeuristicCube();
+        Cube cube = scramble(6, 654);
+        Astar astar = new Astar(cube);
+        astar.solve();
+
+        long peakFrontier = astar.getPeakFrontierSize();
+        long peakExplored = astar.getPeakExploredSize();
+        assertTrue(peakFrontier > 0, "A real search holds states in the frontier");
+        assertTrue(peakExplored > 0, "A real search expands states into the explored set");
+        // The explored set never holds more than the states actually expanded.
+        assertTrue(peakExplored <= astar.getExpandedCount() + 1,
+                "Peak explored (" + peakExplored + ") cannot exceed expanded ("
+                        + astar.getExpandedCount() + ") by more than one");
+    }
+
+    @Test
+    @DisplayName("An already solved cube reports a SOLVED outcome and no expansion")
+    void solvedCubeOutcome() {
+        State.heuristic = new ZeroHeuristic();
+        Astar astar = new Astar(new Cube());
+        astar.solve();
+        assertEquals(Astar.Outcome.SOLVED, astar.getLastOutcome());
+        assertEquals(0, astar.getExpandedCount(), "A solved cube expands nothing");
+    }
+
+    @Test
     @DisplayName("A heuristic search expands no more states than uniform cost")
     void heuristicReducesExpansions() {
         Cube cube = scramble(5, 4242);

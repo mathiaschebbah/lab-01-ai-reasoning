@@ -77,6 +77,17 @@ public final class Astar {
     private long generatedCount;
 
     /**
+     * Largest size the frontier reached during the last solve. This is the memory
+     * the search needs: Lecture 2 notes that A* runs out of space long before it
+     * runs out of time, so the peak frontier is the metric that matters most for
+     * the deeper scrambles.
+     */
+    private long peakFrontierSize;
+
+    /** Largest size the explored set reached during the last solve. */
+    private long peakExploredSize;
+
+    /**
      * Builds the search for a given initial cube configuration, which becomes the
      * root of the search tree.
      *
@@ -128,6 +139,27 @@ public final class Astar {
     }
 
     /**
+     * Returns the peak frontier size of the last solve call, that is the largest
+     * number of states the priority queue held at once. It is the practical memory
+     * footprint of the search.
+     *
+     * @return the largest frontier size observed during the last solve
+     */
+    public long getPeakFrontierSize() {
+        return peakFrontierSize;
+    }
+
+    /**
+     * Returns the peak explored set size of the last solve call, that is the
+     * largest number of distinct configurations recorded as expanded.
+     *
+     * @return the largest explored set size observed during the last solve
+     */
+    public long getPeakExploredSize() {
+        return peakExploredSize;
+    }
+
+    /**
      * Runs the A* algorithm from the root configuration.
      *
      * @return the list of action strings leading to the solved cube, an empty
@@ -137,6 +169,8 @@ public final class Astar {
     public List<String> solve() {
         expandedCount = 0;
         generatedCount = 0;
+        peakFrontierSize = 0;
+        peakExploredSize = 0;
         lastOutcome = Outcome.EXHAUSTED;
 
         // Wall-clock deadline, only computed when a budget was requested. The
@@ -160,6 +194,9 @@ public final class Astar {
                 continue;
             }
             explored.add(node);
+            if (explored.size() > peakExploredSize) {
+                peakExploredSize = explored.size();
+            }
 
             // Goal test on expansion guarantees optimality for A* graph search.
             if (node.isGoal()) {
@@ -188,6 +225,9 @@ public final class Astar {
                 }
                 frontier.push(child);
                 generatedCount++;
+            }
+            if (frontier.size() > peakFrontierSize) {
+                peakFrontierSize = frontier.size();
             }
         }
         return null; // Frontier exhausted without reaching the goal.
