@@ -206,9 +206,8 @@ public final class Astar {
                 continue;
             }
             explored.add(node);
-            if (explored.size() > peakExploredSize) {
-                peakExploredSize = explored.size();
-            }
+            // The explored set never shrinks, so its current size is its peak.
+            peakExploredSize = explored.size();
 
             // Goal test on expansion guarantees optimality for A* graph search.
             if (node.isGoal()) {
@@ -235,8 +234,11 @@ public final class Astar {
                 if (explored.contains(child) && explored.bestCost(child) <= child.getNbrActions()) {
                     continue;
                 }
-                frontier.push(child);
-                generatedCount++;
+                // Count a child as generated only when it actually enters the
+                // frontier; a duplicate rejected by push is not a new node.
+                if (frontier.push(child)) {
+                    generatedCount++;
+                }
             }
             if (frontier.size() > peakFrontierSize) {
                 peakFrontierSize = frontier.size();

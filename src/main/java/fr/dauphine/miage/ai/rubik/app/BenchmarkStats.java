@@ -31,6 +31,7 @@ public final class BenchmarkStats {
     private int solved;
     private int timedOut;
     private int hitNodeLimit;
+    private int exhausted;
     private int attempts;
     private long totalExpanded;
     private long totalGenerated;
@@ -68,6 +69,15 @@ public final class BenchmarkStats {
     public void recordNodeLimit() {
         attempts++;
         hitNodeLimit++;
+    }
+
+    /**
+     * Records a cube whose search ended without a solution and without hitting the
+     * time or node budget. It still counts as an attempt, so the success rate
+     * stays honest even on this rare outcome.
+     */
+    public void recordExhausted() {
+        attempts++;
     }
 
     /** @return the number of cubes attempted in this cell. */
@@ -150,18 +160,32 @@ public final class BenchmarkStats {
      * @return one of "solved", "partial", "timeout", "node-limit" or "failed"
      */
     public String note() {
-        if (attempts > 0 && solved == attempts) {
+        if (attempts == 0) {
+            return "none";
+        }
+        if (solved == attempts) {
             return "solved";
         }
-        if (solved == 0 && timedOut >= hitNodeLimit && timedOut > 0) {
+        if (solved > 0) {
+            return "partial";
+        }
+        // No cube solved: name the failure that dominated, breaking a tie in favor
+        // of the more honest "mixed" label so neither budget is over-blamed.
+        if (timedOut > 0 && timedOut > hitNodeLimit) {
             return "timeout";
         }
-        if (solved == 0 && hitNodeLimit > 0) {
+        if (hitNodeLimit > 0 && hitNodeLimit > timedOut) {
             return "node-limit";
         }
-        if (solved == 0) {
-            return "failed";
+        if (timedOut > 0 && hitNodeLimit > 0) {
+            return "mixed";
         }
-        return "partial";
+        if (timedOut > 0) {
+            return "timeout";
+        }
+        if (hitNodeLimit > 0) {
+            return "node-limit";
+        }
+        return "failed";
     }
 }

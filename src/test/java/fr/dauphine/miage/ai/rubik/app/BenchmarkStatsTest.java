@@ -74,6 +74,19 @@ class BenchmarkStatsTest {
     }
 
     @Test
+    @DisplayName("Every outcome counts as an attempt, so the success rate is honest")
+    void everyOutcomeIsAnAttempt() {
+        BenchmarkStats stats = new BenchmarkStats();
+        stats.recordSolved(10, 100, 1_000_000L, 5, 8);
+        stats.recordExhausted();
+        // One solved, one exhausted: the success rate must be 50%, not 100%.
+        assertEquals(2, stats.attempts());
+        assertEquals(1, stats.solved());
+        assertEquals(50.0, stats.successRate(), EPS);
+        assertEquals("partial", stats.note());
+    }
+
+    @Test
     @DisplayName("The note explains the dominant failure cause")
     void noteReflectsOutcome() {
         BenchmarkStats allSolved = new BenchmarkStats();

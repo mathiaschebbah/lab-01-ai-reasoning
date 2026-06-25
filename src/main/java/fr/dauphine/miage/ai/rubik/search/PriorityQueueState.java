@@ -41,15 +41,18 @@ public final class PriorityQueueState {
      * configuration is already present.
      *
      * @param state the state to add
+     * @return {@code true} if the state was actually added (it was new or better),
+     *         {@code false} if an equal or better entry already made it redundant
      */
-    public void push(State state) {
+    public boolean push(State state) {
         Integer known = bestEvaluation.get(state);
         if (known != null && known <= state.getEvaluation()) {
             // An equal or better entry for this configuration already exists.
-            return;
+            return false;
         }
         bestEvaluation.put(state, state.getEvaluation());
         queue.add(state);
+        return true;
     }
 
     /**

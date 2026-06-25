@@ -169,6 +169,9 @@ public final class Benchmark {
                 stats.recordTimeout();
             } else if (astar.getLastOutcome() == Astar.Outcome.NODE_LIMIT) {
                 stats.recordNodeLimit();
+            } else {
+                // Frontier exhausted with no solution: still a real attempt.
+                stats.recordExhausted();
             }
         }
         return stats;

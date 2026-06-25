@@ -226,7 +226,7 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         }
         log.append("Solution found in " + result.plan.size() + " moves:\n");
         log.append(String.join(" ", result.plan) + "\n");
-        log.append(String.format(
+        log.append(String.format(java.util.Locale.US,
                 "expanded = %d, generated = %d, peak frontier = %d, time = %.0f ms%n",
                 result.expanded, result.generated, result.peakFrontier,
                 result.nanos / 1_000_000.0));
