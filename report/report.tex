@@ -569,18 +569,19 @@ both keep A* optimal.
 
 We measured three strategies. The first is the uniform cost search, where $h = 0$.
 The second is A* with the piece heuristic. The third is A* with the sticker
-heuristic. For each strategy and depth, we solved several cubes. We recorded the
-success rate and the average expanded states. We also recorded the average time
-and solution length. A run fails when it passes a fixed node limit. The seeds are
-fixed, so the numbers can be reproduced.
+heuristic. For each strategy and depth, we solved five cubes. We recorded the
+success rate, the average expanded and generated states, the average peak frontier
+size, the average time, and the solution length. A run fails when it passes a node
+limit or a time budget. The seeds are fixed, so the numbers can be reproduced with
+our benchmark.
 
 \subsection{Results}
 
 Table~\ref{tab:results} reports the main numbers. The pattern is clear. The
-uniform cost search blows up around depth seven. It expands hundreds of thousands
-of states at depth six. It then fails at depth seven and eight under the limit.
-Both heuristics scale much further. The sticker heuristic is the strongest here.
-It expands far fewer states than the piece heuristic.
+uniform cost search blows up around depth six. It expands half a million states
+there. It then solves only one cube in five from depth seven. Both heuristics
+scale much further. The sticker heuristic is the strongest here. It expands far
+fewer states than the piece heuristic.
 
 \begin{table}[H]
 \centering
@@ -590,51 +591,77 @@ It expands far fewer states than the piece heuristic.
  & \multicolumn{2}{c|}{UCS ($h=0$)} & \multicolumn{2}{c|}{A* HeuristicCube} & \multicolumn{2}{c}{A* HeuristicLabel} \\
 Depth & expanded & time (ms) & expanded & time (ms) & expanded & time (ms) \\
 \midrule
-4 & 6\,818 & 26 & 8 & 0.1 & 14 & 0.2 \\
-5 & 20\,599 & 86 & 64 & 0.7 & 40 & 0.9 \\
-6 & 503\,575 & 3\,170 & 450 & 5.2 & 400 & 5.7 \\
-7 & fails & n/a & 6\,953 & 66 & 1\,597 & 16 \\
-8 & fails & n/a & 26\,304 & 207 & 5\,793 & 56 \\
+4 & 6\,818 & 18 & 8 & 0.1 & 14 & 0.2 \\
+5 & 20\,599 & 57 & 64 & 0.7 & 40 & 0.5 \\
+6 & 503\,575 & 2\,531 & 450 & 4.8 & 400 & 3.0 \\
+7 & fails & n/a & 6\,953 & 70 & 1\,597 & 12 \\
+8 & fails & n/a & 26\,304 & 130 & 5\,793 & 62 \\
+9 & fails & n/a & 386\,257 & 3\,126 & 46\,577 & 508 \\
 \bottomrule
 \end{tabular}
 \caption{Average expanded states and time per strategy and scramble depth. UCS
-fails from depth seven under the node limit.}
+solves every cube up to depth six, then fails on most cubes from depth seven.}
 \label{tab:results}
+\end{table}
+
+The benchmark also reports the memory cost and the branching. Table~\ref{tab:memory}
+gives the average peak frontier size, the number of states held at once. This is
+the space the search needs. It grows about ten times per added move. At depth nine
+the sticker heuristic holds about 0.4 million states. The piece heuristic holds
+eight times more. This confirms the slides: A* runs out of space, not time.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{r|rr|rr}
+\toprule
+ & \multicolumn{2}{c|}{Peak frontier (states)} & \multicolumn{2}{c}{Eff. branching} \\
+Depth & HeuristicCube & HeuristicLabel & Cube & Label \\
+\midrule
+6 & 3\,911    & 3\,622    & 9.68 & 10.05 \\
+7 & 61\,259   & 14\,322   & 9.81 & 9.97 \\
+8 & 225\,205  & 51\,736   & 9.56 & 9.93 \\
+9 & 3\,280\,745 & 413\,008 & 9.49 & 9.87 \\
+\bottomrule
+\end{tabular}
+\caption{Average peak frontier size and effective branching factor (states added
+to the frontier per expanded node). It stays near ten, below the twelve raw turns,
+because duplicate detection drops many repeated states.}
+\label{tab:memory}
 \end{table}
 
 Figure~\ref{fig:plot} draws the expanded states on a logarithmic scale. The gap
 between the uniform cost search and A* grows very fast. At depth six the gap is
-about three orders of magnitude. The two A* curves stay low and close. The sticker
-heuristic is slightly below the piece heuristic.
+about three orders of magnitude. The two A* curves stay low. The sticker heuristic
+stays below the piece heuristic, and the gap widens with the depth.
 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[scale=1.0]
-  % axes
-  \def\xmin{4} \def\xmax{8}
-  % log10 values of expanded counts, mapped to y
-  % UCS: 4->3.83, 5->4.31, 6->5.70 ; Cube: 4->0.9,5->1.8,6->2.65,7->3.84,8->4.42 ; Label: 4->1.15,5->1.6,6->2.6,7->3.2,8->3.76
-  \begin{scope}[xscale=1.6,yscale=0.9]
-    \draw[->] (4,0) -- (8.4,0) node[right]{\scriptsize scramble depth};
+  % log10 values of expanded counts (final benchmark), mapped to y
+  % UCS: 4->3.83, 5->4.31, 6->5.70 ; Cube: 4->0.90,5->1.81,6->2.65,7->3.84,8->4.42,9->5.59 ; Label: 4->1.15,5->1.60,6->2.60,7->3.20,8->3.76,9->4.67
+  \begin{scope}[xscale=1.45,yscale=0.82]
+    \draw[->] (4,0) -- (9.4,0) node[right]{\scriptsize scramble depth};
     \draw[->] (4,0) -- (4,6.3) node[above]{\scriptsize $\log_{10}$ expanded};
-    \foreach \x in {4,5,6,7,8} \draw (\x,0.05) -- (\x,-0.05) node[below]{\scriptsize \x};
+    \foreach \x in {4,5,6,7,8,9} \draw (\x,0.05) -- (\x,-0.05) node[below]{\scriptsize \x};
     \foreach \y in {0,1,2,3,4,5,6} \draw (3.97,\y) -- (4.03,\y) node[left]{\scriptsize \y};
     % UCS (red), only 4..6 then fails
     \draw[thick,red!70!black] (4,3.83) -- (5,4.31) -- (6,5.70);
     \node[red!70!black,font=\scriptsize] at (6.0,6.05) {UCS};
     \filldraw[red!70!black] (4,3.83) circle (1.3pt) (5,4.31) circle (1.3pt) (6,5.70) circle (1.3pt);
     % Cube (blue)
-    \draw[thick,dauphineblue] (4,0.9) -- (5,1.8) -- (6,2.65) -- (7,3.84) -- (8,4.42);
-    \node[dauphineblue,font=\scriptsize] at (8.0,4.75) {Cube};
-    \filldraw[dauphineblue] (4,0.9) circle (1.3pt) (5,1.8) circle (1.3pt) (6,2.65) circle (1.3pt) (7,3.84) circle (1.3pt) (8,4.42) circle (1.3pt);
+    \draw[thick,dauphineblue] (4,0.90) -- (5,1.81) -- (6,2.65) -- (7,3.84) -- (8,4.42) -- (9,5.59);
+    \node[dauphineblue,font=\scriptsize] at (9.0,5.95) {Cube};
+    \filldraw[dauphineblue] (4,0.90) circle (1.3pt) (5,1.81) circle (1.3pt) (6,2.65) circle (1.3pt) (7,3.84) circle (1.3pt) (8,4.42) circle (1.3pt) (9,5.59) circle (1.3pt);
     % Label (green)
-    \draw[thick,green!50!black] (4,1.15) -- (5,1.6) -- (6,2.6) -- (7,3.2) -- (8,3.76);
-    \node[green!50!black,font=\scriptsize] at (8.0,3.35) {Label};
-    \filldraw[green!50!black] (4,1.15) circle (1.3pt) (5,1.6) circle (1.3pt) (6,2.6) circle (1.3pt) (7,3.2) circle (1.3pt) (8,3.76) circle (1.3pt);
+    \draw[thick,green!50!black] (4,1.15) -- (5,1.60) -- (6,2.60) -- (7,3.20) -- (8,3.76) -- (9,4.67);
+    \node[green!50!black,font=\scriptsize] at (9.0,4.35) {Label};
+    \filldraw[green!50!black] (4,1.15) circle (1.3pt) (5,1.60) circle (1.3pt) (6,2.60) circle (1.3pt) (7,3.20) circle (1.3pt) (8,3.76) circle (1.3pt) (9,4.67) circle (1.3pt);
   \end{scope}
 \end{tikzpicture}
-\caption{Expanded states by depth, log scale. UCS grows much faster and stops at
-depth six within memory. Both A* curves stay low.}
+\caption{Expanded states by depth, log scale. UCS grows much faster and stops near
+depth six within memory. Both A* curves stay low, with the sticker heuristic
+below the piece one.}
 \label{fig:plot}
 \end{figure}
 
@@ -651,11 +678,12 @@ the scramble. A* finds it.
 \small
 \begin{tabular}{ll}
 \toprule
-Scramble (7 moves) & \texttt{F U' L U R' D L'} \\
-Solution (7 moves) & \texttt{L D' R U' L' U F'} \\
-Expanded states    & 1\,110 \\
-Generated states   & 12\,030 \\
-Time               & about 20 ms \\
+Scramble (7 moves) & \texttt{U F L D' F' D F} \\
+Solution (7 moves) & \texttt{F' D' F D L' F' U'} \\
+Expanded states    & 1\,974 \\
+Generated states   & 19\,658 \\
+Peak frontier      & 17\,685 states \\
+Time               & about 32 ms \\
 \bottomrule
 \end{tabular}
 \caption{A complete solve with the sticker heuristic. The plan undoes the
@@ -665,10 +693,12 @@ scramble in the optimal number of moves.}
 
 \subsection{Optimality}
 
-The solution length is the same for all three strategies at every depth. For
-example, the average length is 6.0 at depth six. It is 7.6 at depth eight, for all
-three. This is an empirical proof that the heuristics are admissible. An
-overestimating heuristic would make A* return a longer plan. This never happens.
+The solution length is the same for every strategy that solves the same cubes.
+Up to depth six the three strategies all succeed. They return the same average
+length, for example 6.0 at depth six. From depth seven UCS fails, but the two
+heuristics agree: 6.6 at depth seven, 7.6 at depth eight, 8.6 at depth nine. This
+is an empirical proof that the heuristics are admissible. An overestimating
+heuristic would make A* return a longer plan. This never happens.
 
 \subsection{Discussion}
 
@@ -684,25 +714,25 @@ states, not the clock.
 
 We pushed the sticker heuristic, our strongest one, to deeper scrambles.
 Table~\ref{tab:deep} shows the cost as the depth grows. The effort grows fast,
-about ten times per added move. Depth eight is solved in a tenth of a second.
-Depth ten still works. But it expands half a million states. It then takes about
-twelve seconds. Beyond depth ten the frontier no longer fits in memory. So our
-solver stays practical up to about nine or ten random moves. This is the answer
-to the question of the statement.
+about ten times per added move. Depth eight is solved in under a tenth of a second.
+Depth ten still works. But it expands about four hundred thousand states. It then
+takes about four seconds. Beyond depth ten the frontier no longer fits in memory.
+So our solver stays practical up to about ten random moves. This is the answer to
+the question of the statement.
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{rrrr}
+\begin{tabular}{rrrrr}
 \toprule
-Scramble depth & Expanded states & Solution length & Time (s) \\
+Scramble depth & Expanded & Generated & Solution length & Time (s) \\
 \midrule
-8  & 6\,818   & 7.0 & 0.1 \\
-9  & 71\,359  & 8.7 & 1.7 \\
-10 & 495\,949 & 9.3 & 11.8 \\
+8  & 5\,793    & 57\,529    & 7.6 & 0.06 \\
+9  & 46\,577   & 459\,586   & 8.6 & 0.51 \\
+10 & 405\,915  & 4\,002\,675 & 9.6 & 4.54 \\
 \bottomrule
 \end{tabular}
-\caption{A* with the sticker heuristic on deeper scrambles, averaged over six
+\caption{A* with the sticker heuristic on deeper scrambles, averaged over five
 cubes per depth. The cost grows by about an order of magnitude per move.}
 \label{tab:deep}
 \end{table}
@@ -723,16 +753,16 @@ before the code. We made the tests fail, then wrote the code until they passed.
 The cube tests check the algebraic invariants. The search tests check that the
 plan really solves the cube. They also check that A* matches the optimal length.
 The benchmark tests check the metric aggregation. In total the project has
-thirty four tests, and they all pass. The code was also reviewed. The review
+thirty six tests, and they all pass. The code was also reviewed. The review
 helped us find and fix a rotation that turned the wrong way. It also pointed out
 a few performance issues.
 
 \subsection{Limits}
 
-A* is still exponential in the worst case. Our solver stays fast up to about
-eight or nine random moves. Beyond that, the frontier grows too large for memory.
-This is a known limit of A* on the Rubik's Cube. Stronger methods exist, but they
-are outside the scope of this lab.
+A* is still exponential in the worst case. Our solver stays fast up to about ten
+random moves. Beyond that, the frontier grows too large for memory. This is a
+known limit of A* on the Rubik's Cube. Stronger methods exist, but they are
+outside the scope of this lab.
 
 % ======================================================================
 \section{Conclusion}
