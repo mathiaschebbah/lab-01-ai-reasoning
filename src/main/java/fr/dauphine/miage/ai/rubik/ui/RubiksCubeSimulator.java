@@ -200,7 +200,7 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
                 List<String> plan = astar.solve();
                 long elapsed = System.nanoTime() - start;
                 return new SolveResult(plan, astar.getExpandedCount(),
-                        astar.getGeneratedCount(), elapsed);
+                        astar.getGeneratedCount(), astar.getPeakFrontierSize(), elapsed);
             }
 
             @Override
@@ -226,8 +226,10 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         }
         log.append("Solution found in " + result.plan.size() + " moves:\n");
         log.append(String.join(" ", result.plan) + "\n");
-        log.append(String.format("expanded = %d, generated = %d, time = %.0f ms%n",
-                result.expanded, result.generated, result.nanos / 1_000_000.0));
+        log.append(String.format(
+                "expanded = %d, generated = %d, peak frontier = %d, time = %.0f ms%n",
+                result.expanded, result.generated, result.peakFrontier,
+                result.nanos / 1_000_000.0));
         status.setText("Animating solution (" + result.plan.size() + " moves)...");
         animate(result.plan);
     }
@@ -280,7 +282,8 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
     }
 
     /** Immutable result of one solve call, passed back from the worker. */
-    private record SolveResult(List<String> plan, long expanded, long generated, long nanos) {
+    private record SolveResult(List<String> plan, long expanded, long generated,
+                               long peakFrontier, long nanos) {
     }
 
     /**
