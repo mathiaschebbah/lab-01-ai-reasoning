@@ -18,8 +18,12 @@ import java.util.Locale;
  *
  * <p>For every selected strategy and for an increasing scramble depth, it solves
  * several cubes under a time budget and a node limit. It prints, per depth, the
- * success rate, the average expanded states, the average time and the average
- * solution length.</p>
+ * metrics defined in Lecture 2: the success rate, the average expanded and
+ * generated states (time complexity), the effective branching factor (generated
+ * per expanded), the average peak frontier size (space complexity), the average
+ * time, the search throughput in states per second, and the average solution
+ * length. A closing summary gives the deepest scramble each strategy still
+ * solved, which answers the question of the statement directly.</p>
  *
  * <h2>Why this benchmark is easy to read and never hangs</h2>
  * <ul>
@@ -70,50 +74,6 @@ public final class Benchmark {
                           long timeMs, long nodeLimit, boolean prune) {
     }
 
-    /** Aggregated results for one (strategy, depth) cell. */
-    private static final class Stats {
-        int solved;
-        int timedOut;
-        int hitNodeLimit;
-        int attempts;
-        long totalExpanded;
-        long totalNanos;
-        long totalLength;
-
-        double successRate() {
-            return attempts == 0 ? 0 : (100.0 * solved / attempts);
-        }
-
-        double avgExpanded() {
-            return solved == 0 ? 0 : (double) totalExpanded / solved;
-        }
-
-        double avgMillis() {
-            return solved == 0 ? 0 : (totalNanos / 1_000_000.0) / solved;
-        }
-
-        double avgLength() {
-            return solved == 0 ? 0 : (double) totalLength / solved;
-        }
-
-        /** A short word explaining why the failures, if any, happened. */
-        String note() {
-            if (solved == attempts) {
-                return "solved";
-            }
-            if (solved == 0 && timedOut >= hitNodeLimit && timedOut > 0) {
-                return "timeout";
-            }
-            if (solved == 0 && hitNodeLimit > 0) {
-                return "node-limit";
-            }
-            if (solved == 0) {
-                return "failed";
-            }
-            return "partial";
-        }
-    }
-
     public static void main(String[] args) {
         if (hasFlag(args, "--help") || hasFlag(args, "-h")) {
             printHelp();
@@ -128,27 +88,48 @@ public final class Benchmark {
                 keysOf(config.strategies()), config.maxDepth(), config.instances(),
                 config.timeMs(), config.nodeLimit(), config.prune());
 
+        List<String> summary = new ArrayList<>();
         for (Strategy strategy : config.strategies()) {
-            runStrategy(strategy, config);
+            int practicalDepth = runStrategy(strategy, config);
+            summary.add(String.format(Locale.US, "| %-20s | %18d |",
+                    strategy.name(), practicalDepth));
         }
+
+        // A short comparison table answers the question of the statement directly:
+        // from how many random moves can each strategy no longer solve the cube.
+        System.out.println("### Summary: practical scramble depth per strategy");
+        System.out.println("| strategy             | practical max depth |");
+        System.out.println("|:---------------------|--------------------:|");
+        for (String line : summary) {
+            System.out.println(line);
+        }
+        System.out.println();
     }
 
-    /** Runs one strategy across the depths, stopping when a depth solves nothing. */
-    private static void runStrategy(Strategy strategy, Config config) {
+    /**
+     * Runs one strategy across the depths, stopping when a depth solves nothing.
+     *
+     * @return the deepest scramble the strategy still solved within the budget
+     */
+    private static int runStrategy(Strategy strategy, Config config) {
         State.heuristic = strategy.heuristic();
         System.out.println("### " + strategy.name());
-        System.out.println("| depth | success | avg expanded | avg time (ms) | avg length | note       |");
-        System.out.println("|------:|--------:|-------------:|--------------:|-----------:|:-----------|");
+        System.out.println("| depth | success | avg expanded | avg generated | "
+                + "eff. b | peak frontier | avg time (ms) | states/s | avg length | note       |");
+        System.out.println("|------:|--------:|-------------:|--------------:|"
+                + "-------:|--------------:|--------------:|---------:|-----------:|:-----------|");
 
         int lastSolvedDepth = 0;
         for (int depth = 1; depth <= config.maxDepth(); depth++) {
-            Stats stats = run(strategy, depth, config);
+            BenchmarkStats stats = run(strategy, depth, config);
             System.out.printf(Locale.US,
-                    "| %5d | %6.0f%% | %12.0f | %13.1f | %10.1f | %-10s |%n",
-                    depth, stats.successRate(), stats.avgExpanded(),
-                    stats.avgMillis(), stats.avgLength(), stats.note());
+                    "| %5d | %6.0f%% | %12.0f | %13.0f | %6.2f | %13.0f | "
+                            + "%13.1f | %8.0f | %10.1f | %-10s |%n",
+                    depth, stats.successRate(), stats.avgExpanded(), stats.avgGenerated(),
+                    stats.effectiveBranching(), stats.avgPeakFrontier(), stats.avgMillis(),
+                    stats.expandedPerSecond(), stats.avgLength(), stats.note());
 
-            if (stats.solved > 0) {
+            if (stats.solved() > 0) {
                 lastSolvedDepth = depth;
             } else {
                 // This strategy now solves nothing within the budget. Deeper
@@ -156,16 +137,17 @@ public final class Benchmark {
                 System.out.printf(Locale.US,
                         "_stopped at depth %d (%s); practical up to depth %d._%n%n",
                         depth, stats.note(), lastSolvedDepth);
-                return;
+                return lastSolvedDepth;
             }
         }
         System.out.printf(Locale.US,
                 "_practical up to depth %d (the configured maximum)._%n%n",
                 lastSolvedDepth);
+        return lastSolvedDepth;
     }
 
-    private static Stats run(Strategy strategy, int depth, Config config) {
-        Stats stats = new Stats();
+    private static BenchmarkStats run(Strategy strategy, int depth, Config config) {
+        BenchmarkStats stats = new BenchmarkStats();
         for (int i = 0; i < config.instances(); i++) {
             // Deterministic seed per (depth, instance) for reproducible numbers.
             Scrambler scrambler = new Scrambler(1_000L * depth + i);
@@ -180,16 +162,13 @@ public final class Benchmark {
             List<String> plan = astar.solve();
             long elapsed = System.nanoTime() - start;
 
-            stats.attempts++;
             if (plan != null) {
-                stats.solved++;
-                stats.totalExpanded += astar.getExpandedCount();
-                stats.totalNanos += elapsed;
-                stats.totalLength += plan.size();
+                stats.recordSolved(astar.getExpandedCount(), astar.getGeneratedCount(),
+                        elapsed, plan.size(), astar.getPeakFrontierSize());
             } else if (astar.getLastOutcome() == Astar.Outcome.TIMEOUT) {
-                stats.timedOut++;
+                stats.recordTimeout();
             } else if (astar.getLastOutcome() == Astar.Outcome.NODE_LIMIT) {
-                stats.hitNodeLimit++;
+                stats.recordNodeLimit();
             }
         }
         return stats;
@@ -303,6 +282,13 @@ public final class Benchmark {
 
                 Each strategy stops on its own once a depth solves nothing within
                 the time budget, and reports how deep it stayed practical.
+
+                For each depth the table reports the Lecture 2 metrics: success
+                rate, average expanded and generated states (time complexity),
+                effective branching factor, average peak frontier (space
+                complexity), average time, throughput in states per second, and
+                average solution length. A closing summary lists the practical
+                depth per strategy.
 
                 Examples:
                   # quick look at A* only, no waiting on UCS
