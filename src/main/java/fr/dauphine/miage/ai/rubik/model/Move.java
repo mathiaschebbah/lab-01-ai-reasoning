@@ -22,33 +22,19 @@ public final class Move {
     /** Number of distinct moves (twelve quarter turns). */
     public static final int COUNT = 12;
 
-    /** Human readable notation for each action identifier 0 to 11. */
     private static final String[] NOTATION = {
             "U", "L", "F", "R", "D", "B",       // 0..5  clockwise
             "U'", "L'", "F'", "R'", "D'", "B'"  // 6..11 counter clockwise
     };
 
     private Move() {
-        // Utility class.
     }
 
-    /**
-     * Returns the notation of an action identifier.
-     *
-     * @param action the action identifier (0 to 11)
-     * @return the matching notation, for example "R" or "U'"
-     */
     public static String notation(int action) {
         return NOTATION[action];
     }
 
-    /**
-     * Returns the action identifier of a notation string.
-     *
-     * @param notation one of "U", "L", ..., "B'"
-     * @return the matching action identifier (0 to 11)
-     * @throws IllegalArgumentException if the notation is unknown
-     */
+    /** @throws IllegalArgumentException if the notation is not one of "U", "L", ..., "B'". */
     public static int fromNotation(String notation) {
         for (int action = 0; action < NOTATION.length; action++) {
             if (NOTATION[action].equals(notation)) {
@@ -61,9 +47,6 @@ public final class Move {
     /**
      * Returns the inverse of an action: the move that undoes it. A clockwise turn
      * (0 to 5) and its counter clockwise counterpart (6 to 11) are inverses.
-     *
-     * @param action the action identifier (0 to 11)
-     * @return the inverse action identifier
      */
     public static int inverse(int action) {
         return action < 6 ? action + 6 : action - 6;

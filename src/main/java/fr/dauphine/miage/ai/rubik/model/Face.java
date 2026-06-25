@@ -32,7 +32,6 @@ public enum Face {
         this.solvedColor = solvedColor;
     }
 
-    /** @return the color this face must be uniformly filled with when solved. */
     public Color solvedColor() {
         return solvedColor;
     }

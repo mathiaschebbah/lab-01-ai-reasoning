@@ -59,13 +59,11 @@ public final class BenchmarkStats {
         totalPeakFrontier += peakFrontier;
     }
 
-    /** Records a cube that the search gave up on after exceeding the time budget. */
     public void recordTimeout() {
         attempts++;
         timedOut++;
     }
 
-    /** Records a cube that the search gave up on after exceeding the node limit. */
     public void recordNodeLimit() {
         attempts++;
         hitNodeLimit++;
@@ -80,52 +78,45 @@ public final class BenchmarkStats {
         attempts++;
     }
 
-    /** @return the number of cubes attempted in this cell. */
     public int attempts() {
         return attempts;
     }
 
-    /** @return the number of cubes solved within the budget. */
     public int solved() {
         return solved;
     }
 
-    /** @return the number of cubes dropped for exceeding the time budget. */
     public int timedOut() {
         return timedOut;
     }
 
-    /** @return the number of cubes dropped for exceeding the node limit. */
     public int hitNodeLimit() {
         return hitNodeLimit;
     }
 
-    /** @return the percentage of attempts that were solved. */
     public double successRate() {
         return attempts == 0 ? 0 : (100.0 * solved / attempts);
     }
 
-    /** @return the average number of expanded states over the solved cubes. */
+    // Averages are over the solved cubes only, so a failure never distorts them.
     public double avgExpanded() {
         return solved == 0 ? 0 : (double) totalExpanded / solved;
     }
 
-    /** @return the average number of generated states over the solved cubes. */
     public double avgGenerated() {
         return solved == 0 ? 0 : (double) totalGenerated / solved;
     }
 
-    /** @return the average solving time over the solved cubes, in milliseconds. */
+    /** @return the average solving time, in milliseconds. */
     public double avgMillis() {
         return solved == 0 ? 0 : (totalNanos / 1_000_000.0) / solved;
     }
 
-    /** @return the average solution length over the solved cubes, in moves. */
+    /** @return the average solution length, in moves. */
     public double avgLength() {
         return solved == 0 ? 0 : (double) totalLength / solved;
     }
 
-    /** @return the average peak frontier size over the solved cubes. */
     public double avgPeakFrontier() {
         return solved == 0 ? 0 : (double) totalPeakFrontier / solved;
     }
@@ -153,12 +144,6 @@ public final class BenchmarkStats {
         return totalNanos == 0 ? 0 : totalExpanded / (totalNanos / 1_000_000_000.0);
     }
 
-    /**
-     * Returns a short word explaining the dominant outcome of the cell: whether it
-     * was fully solved, partially solved, or which failure dominated.
-     *
-     * @return one of "solved", "partial", "timeout", "node-limit" or "failed"
-     */
     public String note() {
         if (attempts == 0) {
             return "none";

@@ -45,7 +45,6 @@ public final class CubeGeometry {
     }
 
     private CubeGeometry() {
-        // Utility class.
     }
 
     /**
@@ -78,7 +77,6 @@ public final class CubeGeometry {
         }
     }
 
-    /** @return the flat sticker index for a (face, row, col) triple. */
     public static int index(Face face, int row, int col) {
         return face.ordinal() * 9 + row * 3 + col;
     }
@@ -89,9 +87,6 @@ public final class CubeGeometry {
      * the same identifier, which lets the piece based heuristic group the three
      * stickers of a corner or the two stickers of an edge.
      *
-     * @param face the face
-     * @param row  the row index (0 to 2)
-     * @param col  the column index (0 to 2)
      * @return a stable cubie identifier in the range 0 to 26
      */
     public static int cubieId(Face face, int row, int col) {
@@ -104,11 +99,6 @@ public final class CubeGeometry {
      * Returns how many stickers sit on the cubie of the given sticker: 3 for a
      * corner, 2 for an edge, 1 for a center. Equivalent to the number of non zero
      * coordinates of the cubie position.
-     *
-     * @param face the face
-     * @param row  the row index (0 to 2)
-     * @param col  the column index (0 to 2)
-     * @return 3 for a corner, 2 for an edge, 1 for a center
      */
     public static int cubieStickerCount(Face face, int row, int col) {
         Sticker s = stickerAt(face, row, col);
@@ -120,11 +110,9 @@ public final class CubeGeometry {
     }
 
     /**
-     * Computes the clockwise rotation permutation for the given face.
-     *
-     * @param turnedFace the face being turned clockwise
-     * @return an array {@code perm} of length 54 such that, after the turn,
-     *         {@code newStickers[i] = oldStickers[perm[i]]}
+     * Computes the clockwise rotation permutation for the given face: an array
+     * {@code perm} of length 54 such that, after the turn,
+     * {@code newStickers[i] = oldStickers[perm[i]]}.
      */
     public static int[] clockwisePermutation(Face turnedFace) {
         // 1. Build the geometric position of every sticker.
@@ -244,10 +232,8 @@ public final class CubeGeometry {
 
     /**
      * Returns the list of disjoint cycles of a permutation, for documentation
-     * and debugging. Each cycle is a list of flat sticker indices.
-     *
-     * @param perm a permutation in {@code newStickers[i] = old[perm[i]]} form
-     * @return the non trivial cycles (length greater than one)
+     * and debugging. Each cycle is a list of flat sticker indices. Only the non
+     * trivial cycles (length greater than one) are returned.
      */
     public static List<List<Integer>> cycles(int[] perm) {
         boolean[] seen = new boolean[perm.length];

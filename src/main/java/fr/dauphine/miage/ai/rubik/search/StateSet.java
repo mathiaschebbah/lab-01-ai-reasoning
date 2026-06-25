@@ -21,12 +21,7 @@ public final class StateSet {
 
     private final Map<State, Integer> bestCostByState = new HashMap<>();
 
-    /**
-     * Adds a state to the explored set, keeping the smallest {@code g} seen for
-     * its configuration.
-     *
-     * @param state the state to record
-     */
+    /** Keeps the smallest {@code g} seen for the configuration. */
     public void add(State state) {
         Integer current = bestCostByState.get(state);
         if (current == null || state.getNbrActions() < current) {
@@ -34,29 +29,15 @@ public final class StateSet {
         }
     }
 
-    /**
-     * Returns whether a state with the same configuration has already been
-     * expanded.
-     *
-     * @param state the state to test
-     * @return {@code true} if the configuration is in the explored set
-     */
     public boolean contains(State state) {
         return bestCostByState.containsKey(state);
     }
 
-    /**
-     * Returns the smallest {@code g} with which the given configuration has been
-     * expanded, or {@link Integer#MAX_VALUE} if it has never been expanded.
-     *
-     * @param state the state to look up
-     * @return the best known expanded cost for this configuration
-     */
+    /** @return the best known expanded cost, or {@link Integer#MAX_VALUE} if never expanded. */
     public int bestCost(State state) {
         return bestCostByState.getOrDefault(state, Integer.MAX_VALUE);
     }
 
-    /** @return the number of distinct configurations expanded so far. */
     public int size() {
         return bestCostByState.size();
     }

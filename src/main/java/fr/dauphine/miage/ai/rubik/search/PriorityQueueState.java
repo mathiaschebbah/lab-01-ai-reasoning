@@ -37,10 +37,8 @@ public final class PriorityQueueState {
     private final Map<State, Integer> bestEvaluation = new HashMap<>();
 
     /**
-     * Adds a state to the frontier, keeping only the better entry when the same
-     * configuration is already present.
+     * Keeps only the better entry when the same configuration is already present.
      *
-     * @param state the state to add
      * @return {@code true} if the state was actually added (it was new or better),
      *         {@code false} if an equal or better entry already made it redundant
      */
@@ -58,8 +56,6 @@ public final class PriorityQueueState {
     /**
      * Removes and returns the state with the smallest evaluation. Stale entries,
      * superseded by a better push for the same configuration, are skipped.
-     *
-     * @return the best state, or {@code null} if the frontier is empty
      */
     public State pop() {
         State candidate;
@@ -75,23 +71,15 @@ public final class PriorityQueueState {
         return null;
     }
 
-    /**
-     * Returns whether the same configuration is currently in the frontier.
-     *
-     * @param state the state to test
-     * @return {@code true} if a live entry for this configuration exists
-     */
     public boolean contains(State state) {
         return bestEvaluation.containsKey(state);
     }
 
-    /** @return {@code true} if the frontier holds no live state. */
     public boolean isEmpty() {
         // The map holds exactly the live configurations.
         return bestEvaluation.isEmpty();
     }
 
-    /** @return the number of live configurations in the frontier. */
     public int size() {
         return bestEvaluation.size();
     }

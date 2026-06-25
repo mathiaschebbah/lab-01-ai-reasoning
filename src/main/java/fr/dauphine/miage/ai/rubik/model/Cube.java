@@ -46,7 +46,6 @@ public final class Cube {
     /** Flat array of the 54 sticker color codes. */
     private char[] stickers;
 
-    /** Creates a solved cube. */
     public Cube() {
         this.stickers = new char[CubeGeometry.STICKER_COUNT];
         for (Face face : Face.values()) {
@@ -67,12 +66,10 @@ public final class Cube {
         this.stickers = ownedStickers;
     }
 
-    /** @return a deep copy of this cube. */
     public Cube copy() {
         return new Cube(this.stickers.clone());
     }
 
-    /** Resets this cube in place to the solved configuration. */
     public void reset() {
         for (Face face : Face.values()) {
             char code = face.solvedColor().code();
@@ -83,27 +80,11 @@ public final class Cube {
         }
     }
 
-    /**
-     * Returns the color of the sticker at the given face position.
-     *
-     * @param face the face to read
-     * @param row  the row index (0 to 2)
-     * @param col  the column index (0 to 2)
-     * @return the color code stored there
-     */
     public char get(Face face, int row, int col) {
         return stickers[CubeGeometry.index(face, row, col)];
     }
 
-    /**
-     * Sets the color of the sticker at the given face position. Mainly used by
-     * the interface to build custom configurations.
-     *
-     * @param face the face to write
-     * @param row  the row index (0 to 2)
-     * @param col  the column index (0 to 2)
-     * @param code the color code to store
-     */
+    /** Mainly used by the interface to build custom configurations. */
     public void set(Face face, int row, int col, char code) {
         stickers[CubeGeometry.index(face, row, col)] = code;
     }
@@ -116,8 +97,6 @@ public final class Cube {
      * configuration, but anchoring to the fixed solved color keeps {@code
      * isSolved()} perfectly consistent with the heuristics, which estimate the
      * distance to those same fixed target faces.
-     *
-     * @return {@code true} if the configuration is solved
      */
     public boolean isSolved() {
         for (Face face : Face.values()) {
@@ -136,32 +115,26 @@ public final class Cube {
     // Clockwise turns
     // ---------------------------------------------------------------------
 
-    /** Turns the UP face clockwise. */
     public void turnUp() {
         apply(CLOCKWISE.get(Face.UP));
     }
 
-    /** Turns the LEFT face clockwise. */
     public void turnLeft() {
         apply(CLOCKWISE.get(Face.LEFT));
     }
 
-    /** Turns the FRONT face clockwise. */
     public void turnFront() {
         apply(CLOCKWISE.get(Face.FRONT));
     }
 
-    /** Turns the RIGHT face clockwise. */
     public void turnRight() {
         apply(CLOCKWISE.get(Face.RIGHT));
     }
 
-    /** Turns the DOWN face clockwise. */
     public void turnDown() {
         apply(CLOCKWISE.get(Face.DOWN));
     }
 
-    /** Turns the BACK face clockwise. */
     public void turnBack() {
         apply(CLOCKWISE.get(Face.BACK));
     }
@@ -170,32 +143,26 @@ public final class Cube {
     // Counter clockwise turns
     // ---------------------------------------------------------------------
 
-    /** Turns the UP face counter clockwise. */
     public void returnUp() {
         apply(COUNTER_CLOCKWISE.get(Face.UP));
     }
 
-    /** Turns the LEFT face counter clockwise. */
     public void returnLeft() {
         apply(COUNTER_CLOCKWISE.get(Face.LEFT));
     }
 
-    /** Turns the FRONT face counter clockwise. */
     public void returnFront() {
         apply(COUNTER_CLOCKWISE.get(Face.FRONT));
     }
 
-    /** Turns the RIGHT face counter clockwise. */
     public void returnRight() {
         apply(COUNTER_CLOCKWISE.get(Face.RIGHT));
     }
 
-    /** Turns the DOWN face counter clockwise. */
     public void returnDown() {
         apply(COUNTER_CLOCKWISE.get(Face.DOWN));
     }
 
-    /** Turns the BACK face counter clockwise. */
     public void returnBack() {
         apply(COUNTER_CLOCKWISE.get(Face.BACK));
     }
@@ -203,8 +170,6 @@ public final class Cube {
     /**
      * Applies one of the twelve moves identified by its integer code, following
      * the table given in the lab statement (0 to 11).
-     *
-     * @param action the action identifier between 0 and 11
      */
     public void applyAction(int action) {
         switch (action) {
@@ -243,9 +208,6 @@ public final class Cube {
      * without modifying this cube. This fuses the copy and the move into a single
      * array allocation, which matters on the hot path where the search generates
      * twelve successors per expanded state.
-     *
-     * @param action the action identifier (0 to 11)
-     * @return a fresh cube with the action applied
      */
     public Cube withAction(int action) {
         int[] perm = permutationFor(action);
@@ -256,7 +218,6 @@ public final class Cube {
         return new Cube(next);
     }
 
-    /** @return the permutation table of an action identifier (0 to 11). */
     private static int[] permutationFor(int action) {
         Face face = FACE_OF_ACTION[action % 6];
         return action < 6 ? CLOCKWISE.get(face) : COUNTER_CLOCKWISE.get(face);

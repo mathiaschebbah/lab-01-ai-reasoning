@@ -25,11 +25,8 @@ import javax.swing.JPanel;
  */
 public final class CubePanel extends JPanel {
 
-    /** Pixel size of one sticker. */
     private static final int STICKER = 34;
-    /** Gap in pixels between faces. */
     private static final int FACE_GAP = 8;
-    /** Outer margin in pixels. */
     private static final int MARGIN = 16;
 
     private Cube cube;
@@ -43,7 +40,6 @@ public final class CubePanel extends JPanel {
         setBackground(new java.awt.Color(0x2B, 0x2B, 0x2B));
     }
 
-    /** Updates the cube shown by the panel and repaints. */
     public void setCube(Cube cube) {
         this.cube = cube;
         repaint();
@@ -56,13 +52,13 @@ public final class CubePanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         int faceSize = 3 * STICKER;
-        int col1 = MARGIN;                                   // LEFT column
-        int col2 = col1 + faceSize + FACE_GAP;               // FRONT / UP / DOWN column
-        int col3 = col2 + faceSize + FACE_GAP;               // RIGHT column
-        int col4 = col3 + faceSize + FACE_GAP;               // BACK column
-        int row1 = MARGIN;                                   // UP row
-        int row2 = row1 + faceSize + FACE_GAP;               // middle row
-        int row3 = row2 + faceSize + FACE_GAP;               // DOWN row
+        int col1 = MARGIN;
+        int col2 = col1 + faceSize + FACE_GAP;
+        int col3 = col2 + faceSize + FACE_GAP;
+        int col4 = col3 + faceSize + FACE_GAP;
+        int row1 = MARGIN;
+        int row2 = row1 + faceSize + FACE_GAP;
+        int row3 = row2 + faceSize + FACE_GAP;
 
         drawFace(g2, Face.UP, col2, row1);
         drawFace(g2, Face.LEFT, col1, row2);
@@ -71,7 +67,6 @@ public final class CubePanel extends JPanel {
         drawFace(g2, Face.BACK, col4, row2);
         drawFace(g2, Face.DOWN, col2, row3);
 
-        // Face labels above each face block.
         g2.setColor(java.awt.Color.LIGHT_GRAY);
         g2.drawString("U", col2, row1 - 3);
         g2.drawString("L", col1, row2 - 3);

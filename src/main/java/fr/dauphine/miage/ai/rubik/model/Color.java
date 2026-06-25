@@ -28,23 +28,15 @@ public enum Color {
         this.display = display;
     }
 
-    /** @return the single-character code stored in the cube face matrices. */
     public char code() {
         return code;
     }
 
-    /** @return the AWT color used to render this sticker in the interface. */
     public java.awt.Color display() {
         return display;
     }
 
-    /**
-     * Returns the color associated with the given character code.
-     *
-     * @param code one of 'W', 'R', 'G', 'B', 'Y', 'O'
-     * @return the matching color
-     * @throws IllegalArgumentException if the code is unknown
-     */
+    /** @throws IllegalArgumentException if the code is not one of W, R, G, B, Y, O. */
     public static Color fromCode(char code) {
         for (Color color : values()) {
             if (color.code == code) {

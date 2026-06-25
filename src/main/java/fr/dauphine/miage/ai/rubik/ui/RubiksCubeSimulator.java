@@ -82,7 +82,6 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
         controls.setLayout(new GridLayout(2, 1, 6, 6));
         controls.setBorder(BorderFactory.createEmptyBorder(6, 10, 10, 10));
 
-        // Row of the six clockwise and six counter clockwise moves.
         JPanel moves = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
         for (int action = 0; action < Move.COUNT; action++) {
             JButton button = new JButton(Move.notation(action));
@@ -92,7 +91,6 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
             moves.add(button);
         }
 
-        // Row of high level actions.
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         scrambleButton = makeButton("Scramble", "scramble", actions);
         actions.add(new JLabel("moves:"));
@@ -286,11 +284,7 @@ public final class RubiksCubeSimulator extends JFrame implements ActionListener 
                                long peakFrontier, long nanos) {
     }
 
-    /**
-     * Application entry point: creates and shows the window on the Swing thread.
-     *
-     * @param args unused
-     */
+    /** Creates and shows the window on the Swing event thread. */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new RubiksCubeSimulator().setVisible(true));
     }

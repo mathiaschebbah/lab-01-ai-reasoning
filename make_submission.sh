@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Builds the submission ZIP for Lab 1.
-# It contains the PDF report, the full source code, the presentation, the build
-# files and the project statement, but not target/, .git/ or LaTeX build files.
+# It contains the PDF report, the PDF presentation, the full source code and the
+# project statement. The LaTeX sources (.tex, .sty) and the build artifacts
+# (target/, .git/) are left out: only the rendered PDFs are shipped.
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -18,8 +19,8 @@ zip -r "$OUT" \
     pom.xml \
     README.md \
     src \
-    report/report.tex report/report.pdf report/figures report/*.sty \
-    presentation/presentation.tex presentation/presentation.pdf \
+    report/report.pdf \
+    presentation/presentation.pdf \
     "Lab 1 - Solveur Rubik's Cube (Astar).pdf" \
     -x '*.DS_Store' \
     >/dev/null

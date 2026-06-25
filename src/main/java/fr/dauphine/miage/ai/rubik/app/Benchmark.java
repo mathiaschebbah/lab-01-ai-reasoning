@@ -59,17 +59,14 @@ public final class Benchmark {
     private Benchmark() {
     }
 
-    /** A single named heuristic configuration to evaluate. */
     private record Strategy(String key, String name, Heuristic heuristic) {
     }
 
-    /** All strategies known by key. */
     private static final List<Strategy> ALL_STRATEGIES = List.of(
             new Strategy("ucs", "UCS (h=0)", new ZeroHeuristic()),
             new Strategy("cube", "A* HeuristicCube", new HeuristicCube()),
             new Strategy("label", "A* HeuristicLabel", new HeuristicLabel()));
 
-    /** Parsed configuration of one benchmark run. */
     private record Config(List<Strategy> strategies, int maxDepth, int instances,
                           long timeMs, long nodeLimit, boolean prune) {
     }

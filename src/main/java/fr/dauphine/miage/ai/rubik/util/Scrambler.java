@@ -52,12 +52,6 @@ public final class Scrambler {
         return applied;
     }
 
-    /**
-     * Returns a freshly scrambled cube.
-     *
-     * @param moves the number of random quarter turns to apply
-     * @return a new scrambled cube
-     */
     public Cube scrambledCube(int moves) {
         Cube cube = new Cube();
         scramble(cube, moves);

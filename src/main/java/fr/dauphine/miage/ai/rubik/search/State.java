@@ -65,7 +65,6 @@ public final class State {
         this.evaluation = nbrActions + valH;
     }
 
-    /** @return the cube configuration of this node. */
     public Cube getCube() {
         return cube;
     }
@@ -85,34 +84,20 @@ public final class State {
         return actionPere;
     }
 
-    /** @return the heuristic value of this state. */
     public int getValH() {
         return valH;
     }
 
-    /**
-     * Returns the A* evaluation function {@code f = g + h}, that is the number of
-     * actions taken so far plus the heuristic estimate of the remaining cost.
-     *
-     * @return the evaluation value used to order the frontier
-     */
+    /** @return the A* evaluation {@code f = g + h} used to order the frontier. */
     public int getEvaluation() {
         return evaluation;
     }
 
-    /** @return whether this state is a goal state (the cube is solved). */
     public boolean isGoal() {
         return cube.isSolved();
     }
 
-    /**
-     * Generates all child states by applying the twelve possible rotations to
-     * the current cube configuration. Each child carries an incremented action
-     * count, this state as its parent, and the action identifier that produced
-     * it.
-     *
-     * @return the list of the twelve successor states
-     */
+    /** Generates the twelve successors, one per rotation, in a LinkedList as the statement asks. */
     public LinkedList<State> expand() {
         LinkedList<State> children = new LinkedList<>();
         for (int action = 0; action < 12; action++) {
